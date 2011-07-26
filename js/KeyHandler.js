@@ -1,53 +1,40 @@
 var KeyHandler = (function() {
 	function KeyHandler() {
-		var that = this;
-		this.keyListeners = {};
+		var keys = this.keys = [];
 		
-		document.addEventListener('keydown', function(e) {
-			console.log('Pressed:', e.which);
-			var key = e.which;
-			if(that.keyListeners[key] != undefined) {
-				that.keyListeners[key].keyDown = true;
-			}
-		});
-
-		document.addEventListener('keyup', function(e) {
-			var key = e.which;
-			if(that.keyListeners[key] != undefined) {
-				that.keyListeners[key].keyDown = false;
-			}
-		});
+		document.addEventListener('keydown', function(e) { console.log(e.which) });
 	}
 	
-	KeyHandler.prototype.forEachKey = function(key, fn) {
-		if(this.keyListeners[key] != undefined) {
-			for(i in this.keyListeners[key].handlers) {
-				fn(this.keyListeners[key]['handlers'][i]);
+	KeyHandler.prototype.add = function(key, scope, handlers) {
+		for(var evt in handlers) {
+			if(evt == 'keyhold') {
+				var newKey = { scope: scope, handler: handlers[evt], down: false };
+				
+				this.add(key, newKey, {
+					keydown: function() { this.down = true },
+					keyup: function() { this.down = false }
+				});
+				
+				this.keys.push(newKey);
+			} else {
+				this.addEventListener(key, scope, evt, handlers[evt]);
 			}
 		}
 	}
 	
-	KeyHandler.prototype.add = function(key, scope, callback) {
-		if(this.keyListeners[key] == undefined) {
-			this.keyListeners[key] = {
-				keyDown: false,
-				ready: true,
-				handlers: []
-			};
-		}
-		
-		this.keyListeners[key].handlers.push({
-			scope: scope,
-			callback: callback
+	KeyHandler.prototype.addEventListener = function(key, scope, evt, handler) {
+		document.addEventListener(evt, function(e) {
+			if(e.which == key) {
+				handler.call(scope);
+			}
 		});
 	}
 	
 	KeyHandler.prototype.trigger = function() {
-		for(i in this.keyListeners) {
-			if(this.keyListeners[i].keyDown) {
-				this.forEachKey(i, function(handler) {
-					handler.callback.call(handler.scope);
-				});
+		for(var i in this.keys) {
+			var key = this.keys[i];
+			if(key.down == true) {
+				key.handler.call(key.scope);
 			}
 		}
 	}

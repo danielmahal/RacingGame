@@ -1,24 +1,21 @@
 var Car = (function() {
 	
-	var cDrag		= 1;
-	var cRR			= 40;
+	var cDrag		= .1;
+	var cRR			= 50;
 	var engineForce = 1000;
-	var brakeForce	= 100;
+	var brakeForce	= 1000;
+	var steerForce	= 0.015;
 	
 	function Car(scene, keyHandler) {
 		this.setupObject();
+		this.addKeyHandling(keyHandler);
 		
 		scene.addObject( this.obj );
 		
-		this.engineForce = 0;
 		this.velocity = new THREE.Vector2(0, 0);
 		this.mass = 2000;
 		this.angle = Math.PI * .5;
-		
-		keyHandler.add(87, this, this.accelerate);	// Key: W
-		keyHandler.add(65, this, this.turnLeft);	// Key: A
-		keyHandler.add(83, this, this.brake);	// Key: S
-		keyHandler.add(68, this, this.turnRight);	// Key: D
+		this.steerAngle = 0;
 	}
 	
 	Car.prototype.setupObject = function() {
@@ -48,8 +45,8 @@ var Car = (function() {
 		for(var fb in this.parts.wheels) {
 			for(var lr in this.parts.wheels[fb]) {
 				this.parts.wheels[fb][lr].rotation.y = Math.PI / 2;
-				this.parts.wheels[fb][lr].position.z = 30 * (lr == 'left' ? -1 : 1);
-				this.parts.wheels[fb][lr].position.x = 30 * (fb == 'front' ? -1 : 1);
+				this.parts.wheels[fb][lr].position.x = 30 * (lr == 'left' ? -1 : 1);
+				this.parts.wheels[fb][lr].position.z = 30 * (fb == 'back' ? -1 : 1);
 			}
 		}
 		
@@ -62,45 +59,72 @@ var Car = (function() {
 		this.obj.position.y = 150;
 	}
 	
+	Car.prototype.addKeyHandling = function(keyHandler) {
+		keyHandler.add(87, this, { keydown: this.accelerate, keyup: this.deccelerate });
+		keyHandler.add(83, this, { keydown: this.brake, keyup: this.stopBraking });
+		keyHandler.add(65, this, { keyhold: this.turnLeft });
+		keyHandler.add(68, this, { keyhold: this.turnRight });
+	}
+	
 	Car.prototype.accelerate = function() {
-		this.engineForce = 1000;
+		this.accelerating = true;
+	}
+	
+	Car.prototype.deccelerate = function() {
+		this.accelerating = false;
 	}
 	
 	Car.prototype.brake = function() {
 		this.braking = true;
 	}
 	
+	Car.prototype.stopBraking = function() {
+		this.braking = false;
+	}
+	
 	Car.prototype.turnLeft = function() {
-		this.angle -= .1;
+		this.steerAngle += ((Math.PI * .6) - this.steerAngle) * .05;
 	}
 	
 	Car.prototype.turnRight = function() {
-		this.angle += .1;
+		this.steerAngle += ((-Math.PI * .6) - this.steerAngle) * .05;
 	}
 	
 	Car.prototype.update = function() {
-		speed = Math.sqrt(this.velocity.length());
-		
+		var speed = Math.sqrt(this.velocity.length());
 		var angleVector = new THREE.Vector2(Math.sin(this.angle), Math.cos(this.angle));
-		var traction	= angleVector.multiplyScalar(this.engineForce);
+		
+		var force = this.velocity.clone();
 		
 		// Resistance
 		var drag = this.velocity.clone().multiplyScalar(-cDrag * speed);
 		var friction = this.velocity.clone().multiplyScalar(-cRR);
 		
-		var force = this.velocity.clone().addSelf(traction).addSelf(drag).addSelf(friction);
+		if(this.accelerating) {
+			var traction = angleVector.clone().multiplyScalar(engineForce);
+			force.addSelf(traction);
+		}
 		
+		if(this.braking) {
+			force.subSelf(angleVector.clone().multiplyScalar(brakeForce));
+		}
+		
+		force.addSelf(drag).addSelf(friction);
 		force.divideScalar(this.mass);
 		
 		this.velocity.addSelf(force);
 		
+		this.steerAngle += -this.steerAngle * .2;
+		this.angle += (this.steerAngle * speed * speed) * steerForce;
+		
 		this.obj.position.x += this.velocity.x;
 		this.obj.position.z += this.velocity.y;
 		
-		this.engineForce = 0;
-		this.braking = false;
-		
 		this.obj.rotation.y = this.angle;
+		
+		for(i in this.parts.wheels.front) {
+			this.parts.wheels.front[i].rotation.y = this.steerAngle + (Math.PI * 1.5);
+		}
 	}
 	
 	return Car;
