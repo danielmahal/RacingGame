@@ -1,21 +1,23 @@
 var Car = (function() {
 	
-	var cDrag		= .1;
-	var cRR			= 20;
-	var engineForce = 1000;
-	var brakeForce	= 1000;
-	var steerForce	= 0.015;
+	var constants = {
+		drag: 0.42,
+		resistance: 12.8,
+		engineForce: 1000,
+		steerForce: 0.015
+	}
+	
 	
 	function Car(scene, keyHandler) {
-		this.setupObject();
-		this.addKeyHandling(keyHandler);
-		
-		scene.addObject( this.obj );
-		
 		this.velocity = new THREE.Vector2(0, 0);
 		this.mass = 2000;
 		this.angle = Math.PI * .5;
 		this.steerAngle = 0;
+		
+		this.setupObject();
+		this.addKeyHandling(keyHandler);
+		
+		scene.addObject( this.obj );
 	}
 	
 	Car.prototype.setupObject = function() {
@@ -74,13 +76,9 @@ var Car = (function() {
 		this.accelerating = false;
 	}
 	
-	Car.prototype.brake = function() {
-		this.braking = true;
-	}
+	Car.prototype.brake = function() {}
 	
-	Car.prototype.stopBraking = function() {
-		this.braking = false;
-	}
+	Car.prototype.stopBraking = function() {}
 	
 	Car.prototype.turnLeft = function() {
 		this.steerAngle += ((Math.PI * .2) - this.steerAngle) * .05;
@@ -98,18 +96,14 @@ var Car = (function() {
 		
 		// Resistance
 		var perpForce = -angleVector.y * this.velocity.x + angleVector.x * this.velocity.y;
-		var corneringForce = new THREE.Vector2(-angleVector.y * perpForce, angleVector.x * perpForce).multiplyScalar(100).negate();
+		var corneringForce = new THREE.Vector2(-angleVector.y * perpForce, angleVector.x * perpForce).multiplyScalar(200).negate();
 		
-		var drag = this.velocity.clone().multiplyScalar(-cDrag * speed);
-		var friction = this.velocity.clone().multiplyScalar(-cRR);
+		var drag = this.velocity.clone().multiplyScalar(-constants.drag * speed);
+		var friction = this.velocity.clone().multiplyScalar(-constants.resistance);
 		
 		if(this.accelerating) {
-			var traction = angleVector.clone().multiplyScalar(engineForce);
+			var traction = angleVector.clone().multiplyScalar(constants.engineForce);
 			force.addSelf(traction);
-		}
-		
-		if(this.braking) {
-			force.subSelf(angleVector.clone().multiplyScalar(brakeForce));
 		}
 		
 		force.addSelf(drag).addSelf(friction).addSelf(corneringForce);
@@ -117,8 +111,8 @@ var Car = (function() {
 		
 		this.velocity.addSelf(force);
 		
-		// this.steerAngle += -this.steerAngle * .2;
-		// this.angle += (this.steerAngle * speed * speed) * steerForce;
+		this.steerAngle += -this.steerAngle * .1;
+		this.angle += (this.steerAngle * speed * speed) * constants.steerForce;
 		
 		this.obj.position.x += this.velocity.x;
 		this.obj.position.z += this.velocity.y;
