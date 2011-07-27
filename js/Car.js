@@ -9,6 +9,14 @@ var Car = (function() {
 	
 	
 	function Car(scene, keyHandler) {
+		this.sizes = {
+			carWidth: 30,
+			carHeight: 50,
+			carLength: 400,
+			wheelRadius: 20,
+			wheelDepth: 20
+		}
+		
 		this.velocity = new THREE.Vector2(0, 0);
 		this.mass = 2000;
 		this.angle = Math.PI * .5;
@@ -24,8 +32,8 @@ var Car = (function() {
 		var material = new THREE.MeshPhongMaterial( { ambient: 0x333333, color: 0x000000, specular: 0x333333, wireframe: false }  );
 		
 		var geometries = {
-			body: new THREE.CubeGeometry( 50, 30, 100, 1, 1, 1 ),
-			wheel: new THREE.CylinderGeometry( 20, 20, 20, 15 )
+			body: new THREE.CubeGeometry( this.sizes.carWidth, this.sizes.carHeight - this.sizes.wheelRadius * 0.5, this.sizes.carLength - this.sizes.wheelRadius * 1.2, 1, 1, 1 ),
+			wheel: new THREE.CylinderGeometry( 10, this.sizes.wheelRadius, this.sizes.wheelRadius, this.sizes.wheelDepth )
 		}
 		
 		this.parts = {
@@ -42,13 +50,14 @@ var Car = (function() {
 			}
 		}
 		
-		this.parts.body.position.y = 15;
+		this.parts.body.position.y = this.sizes.carHeight / 2 + this.sizes.wheelRadius * 0.5;
 		
 		for(var fb in this.parts.wheels) {
 			for(var lr in this.parts.wheels[fb]) {
 				this.parts.wheels[fb][lr].rotation.y = Math.PI / 2;
-				this.parts.wheels[fb][lr].position.x = 30 * (lr == 'left' ? -1 : 1);
-				this.parts.wheels[fb][lr].position.z = 30 * (fb == 'back' ? -1 : 1);
+				this.parts.wheels[fb][lr].position.x = (this.sizes.wheelDepth * 0.5 + this.sizes.carWidth * 0.5) * (lr == 'left' ? -1 : 1);
+				this.parts.wheels[fb][lr].position.z = (this.sizes.carLength * 0.5 - this.sizes.wheelRadius) * (fb == 'back' ? -1 : 1);
+				this.parts.wheels[fb][lr].position.y = this.sizes.wheelRadius;
 			}
 		}
 		
