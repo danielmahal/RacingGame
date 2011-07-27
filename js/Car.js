@@ -3,15 +3,18 @@ var Car = (function() {
 	var constants = {
 		drag: 0.42,
 		resistance: 12.8,
-		engineForce: 1000
+		engineForce: 1000,
+		startSlip: 9,
+		stopSlip: 7,
+		slipMultiplier: 0.2
 	}
 	
 	
 	function Car(scene, keyHandler) {
 		this.sizes = {
-			carWidth: 30,
+			carWidth: 40,
 			carHeight: 50,
-			carLength: 200,
+			carLength: 100,
 			wheelRadius: 20,
 			wheelDepth: 20
 		}
@@ -20,9 +23,13 @@ var Car = (function() {
 		this.mass = 2000;
 		this.angle = Math.PI * .5;
 		this.steerAngle = 0;
+		this.currentResistance = constants.resistance;
+		this.slipping = false;
 		
 		this.setupObject();
 		this.addKeyHandling(keyHandler);
+		
+		console.log(this.parts.body)
 		
 		scene.addObject( this.obj );
 	}
@@ -33,6 +40,11 @@ var Car = (function() {
 		var geometries = {
 			body: new THREE.CubeGeometry( this.sizes.carWidth, this.sizes.carHeight - this.sizes.wheelRadius * 0.5, this.sizes.carLength - this.sizes.wheelRadius * 1.2, 1, 1, 1 ),
 			wheel: new THREE.CylinderGeometry( 10, this.sizes.wheelRadius, this.sizes.wheelRadius, this.sizes.wheelDepth )
+		}
+		
+		for(var i in geometries.body.vertices) {
+			console.log(i);
+			geometries.body.vertices[i].position.y = geometries.body.vertices[i].position.y + this.sizes.carHeight / 2;
 		}
 		
 		this.parts = {
@@ -48,8 +60,6 @@ var Car = (function() {
 				}
 			}
 		}
-		
-		this.parts.body.position.y = this.sizes.carHeight / 2 + this.sizes.wheelRadius * 0.5;
 		
 		for(var fb in this.parts.wheels) {
 			for(var lr in this.parts.wheels[fb]) {
@@ -90,12 +100,12 @@ var Car = (function() {
 	
 	Car.prototype.turnRight = function() {
 		this.steerAngle -= .02;
-		this.steerAngle = Math.min(Math.PI * 0.4, this.steerAngle);
+		this.steerAngle = Math.min(Math.PI * 0.2, this.steerAngle);
 	}
 	
 	Car.prototype.turnLeft = function() {
 		this.steerAngle += .02;
-		this.steerAngle = Math.min(Math.PI * 0.4, this.steerAngle);
+		this.steerAngle = Math.min(Math.PI * 0.2, this.steerAngle);
 	}
 	
 	Car.prototype.update = function() {
@@ -104,12 +114,24 @@ var Car = (function() {
 		
 		var force = this.velocity.clone();
 		
-		// Resistance
 		var perpForce = -angleVector.y * this.velocity.x + angleVector.x * this.velocity.y;
-		var corneringForce = new THREE.Vector2(-angleVector.y * perpForce, angleVector.x * perpForce).multiplyScalar(this.mass * 0.1).negate();
+		var corneringForce = new THREE.Vector2(-angleVector.y * perpForce, angleVector.x * perpForce).multiplyScalar(this.currentResistance * 20).negate();
 		
 		var drag = this.velocity.clone().multiplyScalar(-constants.drag * speed);
-		var friction = this.velocity.clone().multiplyScalar(-constants.resistance);
+		var friction = this.velocity.clone().multiplyScalar(-this.currentResistance);
+		
+		// Slipping
+		if(!this.slipping) {
+			if(Math.abs(perpForce) > constants.startSlip) {
+				this.currentResistance = constants.resistance * constants.slipMultiplier;
+				this.slipping = true;
+			}
+		} else {
+			if(Math.abs(perpForce) < constants.stopSlip) {
+				this.currentResistance = constants.resistance;
+				this.slipping = false;
+			}
+		}
 		
 		if(this.accelerating) {
 			var traction = angleVector.clone().multiplyScalar(constants.engineForce);
@@ -121,15 +143,17 @@ var Car = (function() {
 		
 		this.velocity.addSelf(force);
 		
-		this.steerAngle += -this.steerAngle * .1;
-		var turnRadius = this.sizes.carLength / Math.sin(this.steerAngle);
+		this.steerAngle += -this.steerAngle * .25;
 		
-		this.angle += (this.velocity.lengthSq() / turnRadius) * 0.1;
+		var turnRadius = this.sizes.carLength / Math.sin(this.steerAngle);
+		this.angle += (Math.sqrt(this.velocity.lengthSq()) / turnRadius) * 5;
 		
 		this.obj.position.x += this.velocity.x;
 		this.obj.position.z += this.velocity.y;
 		
 		this.obj.rotation.y = this.angle;
+		
+		this.parts.body.rotation.z = Math.min(Math.max(perpForce * 0.05, -1), 1) * 0.2;
 		
 		for(i in this.parts.wheels.front) {
 			this.parts.wheels.front[i].rotation.y = this.steerAngle + (Math.PI * 1.5);
