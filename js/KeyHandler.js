@@ -2,7 +2,7 @@ var KeyHandler = (function() {
 	function KeyHandler() {
 		var keys = this.keys = [];
 		
-		document.addEventListener('keydown', function(e) { console.log(e.which) });
+		// document.addEventListener('keydown', function(e) { console.log(e.which) });
 	}
 	
 	KeyHandler.prototype.add = function(key, scope, handlers) {
