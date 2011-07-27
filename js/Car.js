@@ -1,11 +1,12 @@
 var Car = (function() {
 	
 	var constants = {
-		drag: 0.42,
-		resistance: 12.8,
+		drag: 1.2,
+		resistance: 15,
 		engineForce: 1000,
-		startSlip: 9,
-		stopSlip: 7,
+		brakeForce: 500,
+		startSlip: 10.3,
+		stopSlip: 8,
 		slipMultiplier: 0.2
 	}
 	
@@ -14,11 +15,12 @@ var Car = (function() {
 		this.sizes = {
 			carWidth: 40,
 			carHeight: 50,
-			carLength: 100,
+			carLength: 120,
 			wheelRadius: 20,
 			wheelDepth: 20
 		}
 		
+		this.engineForce = 0;
 		this.velocity = new THREE.Vector2(0, 0);
 		this.mass = 2000;
 		this.angle = Math.PI * .5;
@@ -80,23 +82,25 @@ var Car = (function() {
 	}
 	
 	Car.prototype.addKeyHandling = function(keyHandler) {
-		keyHandler.add(87, this, { keydown: this.accelerate, keyup: this.deccelerate });
-		keyHandler.add(83, this, { keydown: this.brake, keyup: this.stopBraking });
+		keyHandler.add(87, this, { keyhold: this.accelerate });
+		keyHandler.add(83, this, { keyhold: this.braking });
 		keyHandler.add(65, this, { keyhold: this.turnLeft });
 		keyHandler.add(68, this, { keyhold: this.turnRight });
+		keyHandler.add(32, this, { keyhold: this.boost });
 	}
 	
 	Car.prototype.accelerate = function() {
-		this.accelerating = true;
+		this.engineForce = constants.engineForce;
 	}
 	
-	Car.prototype.deccelerate = function() {
-		this.accelerating = false;
+	Car.prototype.boost = function() {
+		this.engineForce = constants.engineForce * 2;
+		this.velocity.multiplyScalar(1.01)
 	}
 	
-	Car.prototype.brake = function() {}
-	
-	Car.prototype.stopBraking = function() {}
+	Car.prototype.braking = function() {
+		this.engineForce = -constants.brakeForce;
+	}
 	
 	Car.prototype.turnRight = function() {
 		this.steerAngle -= .02;
@@ -117,6 +121,7 @@ var Car = (function() {
 		var perpForce = -angleVector.y * this.velocity.x + angleVector.x * this.velocity.y;
 		var corneringForce = new THREE.Vector2(-angleVector.y * perpForce, angleVector.x * perpForce).multiplyScalar(this.currentResistance * 20).negate();
 		
+		var traction = angleVector.clone().multiplyScalar(this.engineForce);
 		var drag = this.velocity.clone().multiplyScalar(-constants.drag * speed);
 		var friction = this.velocity.clone().multiplyScalar(-this.currentResistance);
 		
@@ -133,12 +138,7 @@ var Car = (function() {
 			}
 		}
 		
-		if(this.accelerating) {
-			var traction = angleVector.clone().multiplyScalar(constants.engineForce);
-			force.addSelf(traction);
-		}
-		
-		force.addSelf(drag).addSelf(friction).addSelf(corneringForce);
+		force.addSelf(drag).addSelf(friction).addSelf(corneringForce).addSelf(traction);
 		force.divideScalar(this.mass);
 		
 		this.velocity.addSelf(force);
@@ -158,6 +158,8 @@ var Car = (function() {
 		for(i in this.parts.wheels.front) {
 			this.parts.wheels.front[i].rotation.y = this.steerAngle + (Math.PI * 1.5);
 		}
+		
+		this.engineForce = 0;
 	}
 	
 	return Car;
