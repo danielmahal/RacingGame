@@ -11,7 +11,7 @@ var Car = (function() {
 		this.sizes = {
 			carWidth: 30,
 			carHeight: 50,
-			carLength: 300,
+			carLength: 200,
 			wheelRadius: 20,
 			wheelDepth: 20
 		}
@@ -89,12 +89,12 @@ var Car = (function() {
 	Car.prototype.stopBraking = function() {}
 	
 	Car.prototype.turnRight = function() {
-		this.steerAngle -= .05;
+		this.steerAngle -= .02;
 		this.steerAngle = Math.min(Math.PI * 0.4, this.steerAngle);
 	}
 	
 	Car.prototype.turnLeft = function() {
-		this.steerAngle += .05;
+		this.steerAngle += .02;
 		this.steerAngle = Math.min(Math.PI * 0.4, this.steerAngle);
 	}
 	
@@ -106,7 +106,7 @@ var Car = (function() {
 		
 		// Resistance
 		var perpForce = -angleVector.y * this.velocity.x + angleVector.x * this.velocity.y;
-		var corneringForce = new THREE.Vector2(-angleVector.y * perpForce, angleVector.x * perpForce).multiplyScalar(200).negate();
+		var corneringForce = new THREE.Vector2(-angleVector.y * perpForce, angleVector.x * perpForce).multiplyScalar(this.mass * 0.1).negate();
 		
 		var drag = this.velocity.clone().multiplyScalar(-constants.drag * speed);
 		var friction = this.velocity.clone().multiplyScalar(-constants.resistance);
