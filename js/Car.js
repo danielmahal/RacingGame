@@ -3,8 +3,7 @@ var Car = (function() {
 	var constants = {
 		drag: 0.42,
 		resistance: 12.8,
-		engineForce: 1000,
-		steerForce: 0.015
+		engineForce: 1000
 	}
 	
 	
@@ -12,7 +11,7 @@ var Car = (function() {
 		this.sizes = {
 			carWidth: 30,
 			carHeight: 50,
-			carLength: 400,
+			carLength: 300,
 			wheelRadius: 20,
 			wheelDepth: 20
 		}
@@ -89,12 +88,14 @@ var Car = (function() {
 	
 	Car.prototype.stopBraking = function() {}
 	
-	Car.prototype.turnLeft = function() {
-		this.steerAngle += ((Math.PI * .2) - this.steerAngle) * .05;
+	Car.prototype.turnRight = function() {
+		this.steerAngle -= .05;
+		this.steerAngle = Math.min(Math.PI * 0.4, this.steerAngle);
 	}
 	
-	Car.prototype.turnRight = function() {
-		this.steerAngle += ((-Math.PI * .2) - this.steerAngle) * .05;
+	Car.prototype.turnLeft = function() {
+		this.steerAngle += .05;
+		this.steerAngle = Math.min(Math.PI * 0.4, this.steerAngle);
 	}
 	
 	Car.prototype.update = function() {
@@ -121,7 +122,9 @@ var Car = (function() {
 		this.velocity.addSelf(force);
 		
 		this.steerAngle += -this.steerAngle * .1;
-		this.angle += (this.steerAngle * speed * speed) * constants.steerForce;
+		var turnRadius = this.sizes.carLength / Math.sin(this.steerAngle);
+		
+		this.angle += (this.velocity.lengthSq() / turnRadius) * 0.1;
 		
 		this.obj.position.x += this.velocity.x;
 		this.obj.position.z += this.velocity.y;
