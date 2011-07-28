@@ -3,7 +3,6 @@ var Scene = (function() {
 		Scene.parent.constructor.call(this);
 		
 		this.fog = new THREE.FogExp2( 0xf1f9ff, 0.0008 );
-		// this.friction = 0.998;
 		
 		var light1 = new THREE.DirectionalLight( 0xffffff, 1.2, 10000, false );
 		

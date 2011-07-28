@@ -1,17 +1,16 @@
 var Car = (function() {
 	
 	var constants = {
-		drag: 1.2,
-		resistance: 15,
-		engineForce: 1000,
-		brakeForce: 500,
-		startSlip: 9.5,
-		stopSlip: 8,
-		slipMultiplier: 0.2
+		drag: 1.2 * 0.0001,
+		resistance: 15 * 0.001,
+		engineForce: 1000 * 0.0001,
+		brakeForce: 500 * 0.0001,
+		startSlip: 9.5 * 0.0001,
+		stopSlip: 8 * 0.0001,
+		slipMultiplier: 0.2 * 0.0001
 	}
 	
-	
-	function Car(scene, keyHandler) {
+	function Car(scene, b2world, keyHandler) {
 		this.sizes = {
 			carWidth: 60,
 			carHeight: 60,
@@ -20,18 +19,33 @@ var Car = (function() {
 			wheelDepth: 40
 		}
 		
-		// this.engineForce = 0;
-		// this.velocity = new THREE.Vector2(0, 0);
-		// this.mass = 1600;
-		// this.angle = Math.PI * .5;
-		// this.steerAngle = 0;
-		// this.currentResistance = constants.resistance;
+		this.engineForce = 0;
+		this.currentResistance = constants.resistance;
+		this.steerAngle = 0;
 		// this.slipping = false;
 		
-		this.setupObject();
+		this.obj = this.setupObject();
 		this.addKeyHandling(keyHandler);
 		
+		this.body = this.setupBody(b2world);
+		
 		scene.addObject( this.obj );
+	}
+	
+	Car.prototype.setupBody = function(world) {
+		var bodyDef = new b2BodyDef();
+		bodyDef.type = b2Body.b2_dynamicBody;
+		bodyDef.position.Set(this.obj.position.x * PX_TO_M, this.obj.position.y * PX_TO_M);
+		var body = world.CreateBody(bodyDef);
+		
+		var fixtureDef = new b2FixtureDef();
+		fixtureDef.shape = new b2PolygonShape.AsBox(this.sizes.carLength * PX_TO_M, this.sizes.carWidth * PX_TO_M);
+		fixtureDef.friction = 0.4;
+		fixtureDef.restitution = 0;
+		fixtureDef.density = 100.0;
+		body.CreateFixture(fixtureDef);
+		
+		return body;
 	}
 	
 	Car.prototype.setupObject = function() {
@@ -67,13 +81,15 @@ var Car = (function() {
 			}
 		}
 		
-		this.obj = new THREE.Object3D();
-		this.obj.addChild(this.parts.body);
-		this.obj.addChild(this.parts.wheels.front.left);
-		this.obj.addChild(this.parts.wheels.front.right);
-		this.obj.addChild(this.parts.wheels.back.left);
-		this.obj.addChild(this.parts.wheels.back.right);
-		this.obj.position.y = 150;
+		var obj = new THREE.Object3D();
+		obj.addChild(this.parts.body);
+		obj.addChild(this.parts.wheels.front.left);
+		obj.addChild(this.parts.wheels.front.right);
+		obj.addChild(this.parts.wheels.back.left);
+		obj.addChild(this.parts.wheels.back.right);
+		obj.position.y = 150;
+		
+		return obj;
 	}
 	
 	Car.prototype.addKeyHandling = function(keyHandler) {
@@ -97,18 +113,63 @@ var Car = (function() {
 		this.engineForce = -constants.brakeForce;
 	}
 	
-	Car.prototype.turnRight = function() {
+	Car.prototype.turnLeft = function() {
 		this.steerAngle -= .02;
 		this.steerAngle = Math.min(Math.PI * 0.2, this.steerAngle);
 	}
 	
-	Car.prototype.turnLeft = function() {
+	Car.prototype.turnRight = function() {
 		this.steerAngle += .02;
 		this.steerAngle = Math.min(Math.PI * 0.2, this.steerAngle);
 	}
 	
 	Car.prototype.update = function() {
+		var velocity = this.body.GetLinearVelocity();
 		
+		var speed = velocity.Length();
+		var angleVector = new b2Vec2(Math.cos(this.body.GetAngle()), Math.sin(this.body.GetAngle()));
+		
+		var force = velocity;
+		
+		var perpForce = -angleVector.y * velocity.x + angleVector.x * velocity.y;
+		var corneringForce = new b2Vec2(-angleVector.y * perpForce, angleVector.x * perpForce).GetNegative();
+		
+		var traction = new b2Vec2(angleVector.x, angleVector.y);
+		traction.Multiply(this.engineForce);
+		
+		var drag = new b2Vec2(velocity.x, velocity.y);
+		drag.Multiply(-constants.drag * speed);
+		
+		var friction = new b2Vec2(velocity.x, velocity.y);
+		friction.Multiply(-this.currentResistance);
+		
+		/* Slipping goes here */
+		
+		force.Add(corneringForce);
+		force.Add(traction);
+		force.Add(drag);
+		force.Add(friction);
+		
+		this.body.ApplyImpulse(force, this.body.GetPosition());
+		
+		this.steerAngle += -this.steerAngle * .25;
+		var turnRadius = (this.sizes.carLength * PX_TO_M) / Math.sin(this.steerAngle);
+		var angularForce = (Math.sqrt(velocity.Length()) / turnRadius) * 0.1;
+		
+		this.body.SetAngle(this.body.GetAngle() - angularForce);
+		
+		this.obj.position.z = this.body.GetPosition().x * M_TO_PX;
+		this.obj.position.x = this.body.GetPosition().y * M_TO_PX;
+		
+		this.obj.rotation.y = this.body.GetAngle();
+		// 
+		// this.parts.body.rotation.z = Math.min(Math.max(perpForce * 0.05, -1), 1) * 0.2;
+		// 
+		// for(i in this.parts.wheels.front) {
+		// 	this.parts.wheels.front[i].rotation.y = this.steerAngle * 5 + (Math.PI * 1.5);
+		// }
+		
+		this.engineForce = 0;
 	}
 	
 	return Car;

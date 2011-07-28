@@ -1,3 +1,5 @@
+var PX_TO_M = 0.01,
+	M_TO_PX = 100;
 
 var RacingGame = (function() {
 	function RacingGame(container, b2debugCanvas) {
@@ -15,7 +17,7 @@ var RacingGame = (function() {
 		this.model.scene	= new Scene();
 		this.model.renderer	= new Renderer(container, this.model.scene, this.model.camera);
 		
-		this.model.car = new Car(this.model.scene, this.keyHandler);
+		this.model.car = new Car(this.model.scene, this.model.b2World, this.keyHandler);
 	}
 	
 	RacingGame.prototype.setupDebugDraw = function(debugCanvas) {
@@ -35,6 +37,8 @@ var RacingGame = (function() {
 	RacingGame.prototype.update = function() {
 		this.keyHandler.trigger();
 		this.model.car.update();
+		
+		this.model.b2World.Step(1 / 60, 1, 1);
 	}
 	
 	RacingGame.prototype.render = function() {
