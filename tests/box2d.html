@@ -24,9 +24,11 @@
 				debugDraw = new b2DebugDraw();
 				debugDraw.SetDrawScale(100);
 				debugDraw.SetFlags(b2DebugDraw.e_shapeBit | b2DebugDraw.e_centerOfMassBit);
+				debugDraw.SetSprite(ctx);
 				
 				world = new b2World(new b2Vec2(0.0, 0.0), true);
 				world.SetWarmStarting(true);
+				world.SetDebugDraw(debugDraw);
 				
 				var wall = new b2PolygonShape();
 				var wallBd = new b2BodyDef();
@@ -112,9 +114,6 @@
 				world.Step(timestep, 1, 1);
 				world.ClearForces();
 				
-				debugDraw.SetSprite(ctx);
-				
-				world.SetDebugDraw(debugDraw);
 				world.DrawDebugData();
 				
 				webkitRequestAnimationFrame(loop);

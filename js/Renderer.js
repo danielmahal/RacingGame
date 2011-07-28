@@ -4,7 +4,7 @@ var Renderer = (function() {
 		this.camera = camera;
 		
 		this.webGLRenderer = new THREE.WebGLRenderer();
-		this.webGLRenderer.setSize( window.innerWidth, window.innerHeight );
+		this.webGLRenderer.setSize( window.innerWidth * .5, window.innerHeight );
 		
 		container.appendChild( this.webGLRenderer.domElement );
 	}
