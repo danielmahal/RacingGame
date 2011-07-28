@@ -1,0 +1,127 @@
+<html>
+	<head>
+		<style>
+			body {
+				margin: 0;
+				padding: 0;
+			}
+		</style>
+	</head>
+	<body>
+		<canvas id="canvas" width="800" height="500"></canvas>
+		
+		<script src="../lib/box2d.js/javascript/Box2D/box2d.min.js" type="text/javascript"></script> 
+		
+		<script>
+			var canvas, context, world, debugDraw, timestep = 1 / 60;
+			
+			var car, accelerating, turnRight, turnLeft;
+			
+			var init = function() {
+				canvas = document.getElementById('canvas');
+				ctx = canvas.getContext('2d');
+				
+				debugDraw = new b2DebugDraw();
+				debugDraw.SetDrawScale(100);
+				debugDraw.SetFlags(b2DebugDraw.e_shapeBit | b2DebugDraw.e_centerOfMassBit);
+				
+				world = new b2World(new b2Vec2(0.0, 0.0), true);
+				world.SetWarmStarting(true);
+				
+				var wall = new b2PolygonShape();
+				var wallBd = new b2BodyDef();
+				
+				wall.SetAsBox(4, .2);
+				
+				wallBd.position.Set(4, .2);
+				var wallBottom = world.CreateBody(wallBd);
+				wallBottom.CreateFixture2(wall);
+				
+				car = createBox(world, 4, 4, .2, .2);
+				car.SetLinearDamping(2)
+				car.SetAngularDamping(2)
+				
+				window.addEventListener('click', function(e) {
+					createBox(world, e.clientX * 0.01, (canvas.height - e.clientY) * 0.01, 0.2);
+				});
+				
+				var handleKeys = function(e) {
+					var down = e.type == 'keydown';
+					var up = e.type == 'keyup';
+					var key = e.which;
+					
+					if(key == 38) {
+						if(down) {
+							accelerating = true;
+						} else if(up) {
+							accelerating = false;
+						}
+					}
+					
+					if(key == 39) {
+						if(down) {
+							turnRight = true;
+						} else if(up) {
+							turnRight = false;
+						}
+					}
+					
+					if(key == 37) {
+						if(down) {
+							turnLeft = true;
+						} else if(up) {
+							turnLeft = false;
+						}
+					}
+				}
+				
+				window.addEventListener('keydown', handleKeys);
+				window.addEventListener('keyup', handleKeys);
+			}
+			
+			var createBox = function(world, x, y, w, h) {
+				var bodyDef = new b2BodyDef();
+				bodyDef.type = b2Body.b2_dynamicBody;
+				bodyDef.position.Set(x,y);
+				var body = world.CreateBody(bodyDef);
+				
+				var fixtureDef = new b2FixtureDef();
+				fixtureDef.shape = new b2PolygonShape.AsBox(w, h);
+				fixtureDef.friction = 0.4;
+				fixtureDef.restitution = 0;
+				fixtureDef.density = 100.0;
+				body.CreateFixture(fixtureDef);
+				
+				return body;
+			}
+			
+			var loop = function() {
+				if(turnRight) {
+					car.SetAngularVelocity(car.GetAngularVelocity() - 0.1);
+				}
+				
+				if(turnLeft) {
+					car.SetAngularVelocity(car.GetAngularVelocity() + 0.1);
+				}
+				
+				if(accelerating) {
+					var angle = car.GetAngle() + Math.PI * 0.5;
+					car.ApplyImpulse(new b2Vec2(Math.cos(angle) *2, Math.sin(angle) * 2), car.GetPosition());
+				}
+				
+				world.Step(timestep, 1, 1);
+				world.ClearForces();
+				
+				debugDraw.SetSprite(ctx);
+				
+				world.SetDebugDraw(debugDraw);
+				world.DrawDebugData();
+				
+				webkitRequestAnimationFrame(loop);
+			}
+			
+			init();
+			loop();
+		</script>
+	</body>
+</html>

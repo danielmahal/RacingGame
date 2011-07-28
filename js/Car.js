@@ -5,7 +5,7 @@ var Car = (function() {
 		resistance: 15,
 		engineForce: 1000,
 		brakeForce: 500,
-		startSlip: 10.3,
+		startSlip: 9.5,
 		stopSlip: 8,
 		slipMultiplier: 0.2
 	}
@@ -13,16 +13,16 @@ var Car = (function() {
 	
 	function Car(scene, keyHandler) {
 		this.sizes = {
-			carWidth: 40,
-			carHeight: 50,
-			carLength: 120,
-			wheelRadius: 20,
-			wheelDepth: 20
+			carWidth: 60,
+			carHeight: 60,
+			carLength: 140,
+			wheelRadius: 30,
+			wheelDepth: 40
 		}
 		
 		this.engineForce = 0;
 		this.velocity = new THREE.Vector2(0, 0);
-		this.mass = 2000;
+		this.mass = 1600;
 		this.angle = Math.PI * .5;
 		this.steerAngle = 0;
 		this.currentResistance = constants.resistance;
@@ -30,8 +30,6 @@ var Car = (function() {
 		
 		this.setupObject();
 		this.addKeyHandling(keyHandler);
-		
-		console.log(this.parts.body)
 		
 		scene.addObject( this.obj );
 	}
@@ -42,11 +40,6 @@ var Car = (function() {
 		var geometries = {
 			body: new THREE.CubeGeometry( this.sizes.carWidth, this.sizes.carHeight - this.sizes.wheelRadius * 0.5, this.sizes.carLength - this.sizes.wheelRadius * 1.2, 1, 1, 1 ),
 			wheel: new THREE.CylinderGeometry( 10, this.sizes.wheelRadius, this.sizes.wheelRadius, this.sizes.wheelDepth )
-		}
-		
-		for(var i in geometries.body.vertices) {
-			console.log(i);
-			geometries.body.vertices[i].position.y = geometries.body.vertices[i].position.y + this.sizes.carHeight / 2;
 		}
 		
 		this.parts = {
@@ -62,6 +55,8 @@ var Car = (function() {
 				}
 			}
 		}
+		
+		this.parts.body.position.y =  + this.sizes.carHeight / 2;
 		
 		for(var fb in this.parts.wheels) {
 			for(var lr in this.parts.wheels[fb]) {
@@ -156,7 +151,7 @@ var Car = (function() {
 		this.parts.body.rotation.z = Math.min(Math.max(perpForce * 0.05, -1), 1) * 0.2;
 		
 		for(i in this.parts.wheels.front) {
-			this.parts.wheels.front[i].rotation.y = this.steerAngle + (Math.PI * 1.5);
+			this.parts.wheels.front[i].rotation.y = this.steerAngle * 5 + (Math.PI * 1.5);
 		}
 		
 		this.engineForce = 0;

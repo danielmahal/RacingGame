@@ -1,0 +1,76 @@
+<html>
+	<head>
+		<style>
+		body {
+			background: #eee;
+		}
+		
+		canvas {
+			border: 1px #000 solid;
+		}
+		</style>
+	</head>
+	<body>
+		<canvas id="canvas" width="500" height="500"></canvas>
+		
+		<script src="../lib/three.js/build/three.js"></script>
+		<script>
+			var canvas, context, planes, particles = [];
+		
+			var init = function() {
+				canvas = document.getElementById('canvas');
+				ctx = canvas.getContext('2d');
+				
+				planes = [
+					[1,  0, 0],
+					[0, -1, canvas.width],
+					[-1, 0, canvas.height],
+					[0,  1, 0]
+				];
+				
+				for(var i = 0; i < 20; i++) {
+					particles.push({
+						position: { x: canvas.width * 0.5, y: canvas.height * 0.5 },
+						velocity: { x: Math.random()*4-2, y: Math.random()*4-2 },
+						radius: Math.random() * 20 + 5
+					});
+				}
+			}
+			
+			var animate = function() {
+				ctx.clearRect(0, 0, canvas.width, canvas.height)
+				
+				for(var i in particles) {
+					var p = particles[i];
+					p.position.x += p.velocity.x;
+					p.position.y += p.velocity.y;
+					
+					for(var j in planes) {
+						// Distance = Dot product of particle position vector and plane vector plus the planes origin distance
+						var distance = p.position.x * planes[j][0] + p.position.y * planes[j][1] + planes[j][2];
+						
+						distance -= p.radius;
+						if (distance < 0) {
+							var dot = p.velocity.x * planes[j][0] + p.velocity.y * planes[j][1];
+							
+							// Set velocity to reflection vector: R = V – 2*N*(V•N)
+							p.velocity.x -= 2 * planes[j][0] * dot;
+							p.velocity.y -= 2 * planes[j][1] * dot;
+						}
+					}
+					
+					// draw
+					ctx.beginPath();
+					ctx.arc(p.position.x, p.position.y, p.radius, 0, Math.PI * 2);
+					ctx.stroke();
+					ctx.closePath();
+				}
+				
+				webkitRequestAnimationFrame(animate);
+			}
+			
+			init();
+			animate();
+		</script>
+	</body>
+</html>
