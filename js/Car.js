@@ -20,13 +20,13 @@ var Car = (function() {
 			wheelDepth: 40
 		}
 		
-		this.engineForce = 0;
-		this.velocity = new THREE.Vector2(0, 0);
-		this.mass = 1600;
-		this.angle = Math.PI * .5;
-		this.steerAngle = 0;
-		this.currentResistance = constants.resistance;
-		this.slipping = false;
+		// this.engineForce = 0;
+		// this.velocity = new THREE.Vector2(0, 0);
+		// this.mass = 1600;
+		// this.angle = Math.PI * .5;
+		// this.steerAngle = 0;
+		// this.currentResistance = constants.resistance;
+		// this.slipping = false;
 		
 		this.setupObject();
 		this.addKeyHandling(keyHandler);
@@ -108,53 +108,7 @@ var Car = (function() {
 	}
 	
 	Car.prototype.update = function() {
-		var speed = Math.sqrt(this.velocity.length());
-		var angleVector = new THREE.Vector2(Math.sin(this.angle), Math.cos(this.angle));
 		
-		var force = this.velocity.clone();
-		
-		var perpForce = -angleVector.y * this.velocity.x + angleVector.x * this.velocity.y;
-		var corneringForce = new THREE.Vector2(-angleVector.y * perpForce, angleVector.x * perpForce).multiplyScalar(this.currentResistance * 20).negate();
-		
-		var traction = angleVector.clone().multiplyScalar(this.engineForce);
-		var drag = this.velocity.clone().multiplyScalar(-constants.drag * speed);
-		var friction = this.velocity.clone().multiplyScalar(-this.currentResistance);
-		
-		// Slipping
-		if(!this.slipping) {
-			if(Math.abs(perpForce) > constants.startSlip) {
-				this.currentResistance = constants.resistance * constants.slipMultiplier;
-				this.slipping = true;
-			}
-		} else {
-			if(Math.abs(perpForce) < constants.stopSlip) {
-				this.currentResistance = constants.resistance;
-				this.slipping = false;
-			}
-		}
-		
-		force.addSelf(drag).addSelf(friction).addSelf(corneringForce).addSelf(traction);
-		force.divideScalar(this.mass);
-		
-		this.velocity.addSelf(force);
-		
-		this.steerAngle += -this.steerAngle * .25;
-		
-		var turnRadius = this.sizes.carLength / Math.sin(this.steerAngle);
-		this.angle += (Math.sqrt(this.velocity.lengthSq()) / turnRadius) * 5;
-		
-		this.obj.position.x += this.velocity.x;
-		this.obj.position.z += this.velocity.y;
-		
-		this.obj.rotation.y = this.angle;
-		
-		this.parts.body.rotation.z = Math.min(Math.max(perpForce * 0.05, -1), 1) * 0.2;
-		
-		for(i in this.parts.wheels.front) {
-			this.parts.wheels.front[i].rotation.y = this.steerAngle * 5 + (Math.PI * 1.5);
-		}
-		
-		this.engineForce = 0;
 	}
 	
 	return Car;
