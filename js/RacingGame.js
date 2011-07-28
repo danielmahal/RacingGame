@@ -27,7 +27,7 @@ var RacingGame = (function() {
 		var b2debugContext = debugCanvas.getContext('2d');
 		
 		var debugDraw = new b2DebugDraw();
-		debugDraw.SetDrawScale(100);
+		debugDraw.SetDrawScale(50);
 		debugDraw.SetFlags(b2DebugDraw.e_shapeBit | b2DebugDraw.e_centerOfMassBit);
 		debugDraw.SetSprite(b2debugContext);
 		
