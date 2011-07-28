@@ -13,11 +13,12 @@ var RacingGame = (function() {
 		
 		this.keyHandler = new KeyHandler();
 		
-		this.model.camera	= new Camera(50, window.innerWidth * .5 / window.innerHeight, 1, 3000);
+		this.model.camera	= new Camera(50, window.innerWidth * .5 / window.innerHeight, 1, 4000);
 		this.model.scene	= new Scene();
 		this.model.renderer	= new Renderer(container, this.model.scene, this.model.camera);
 		
 		this.model.car = new Car(this.model.scene, this.model.b2World, this.keyHandler);
+		this.model.wall = new Wall(this.model.scene, this.model.b2World, 500, 300, 500, 100, 100, 0);
 	}
 	
 	RacingGame.prototype.setupDebugDraw = function(debugCanvas) {
@@ -27,7 +28,7 @@ var RacingGame = (function() {
 		var b2debugContext = debugCanvas.getContext('2d');
 		
 		var debugDraw = new b2DebugDraw();
-		debugDraw.SetDrawScale(50);
+		debugDraw.SetDrawScale(20);
 		debugDraw.SetFlags(b2DebugDraw.e_shapeBit | b2DebugDraw.e_centerOfMassBit);
 		debugDraw.SetSprite(b2debugContext);
 		

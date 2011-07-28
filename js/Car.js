@@ -39,11 +39,13 @@ var Car = (function() {
 		var body = world.CreateBody(bodyDef);
 		
 		var fixtureDef = new b2FixtureDef();
-		fixtureDef.shape = new b2PolygonShape.AsBox(this.sizes.carLength * PX_TO_M, this.sizes.carWidth * PX_TO_M);
+		fixtureDef.shape = new b2PolygonShape.AsBox(this.sizes.carLength * PX_TO_M * .5, (this.sizes.carWidth + this.sizes.wheelDepth * 2) * PX_TO_M * .5);
 		fixtureDef.friction = 0.4;
 		fixtureDef.restitution = 0;
 		fixtureDef.density = 100.0;
 		body.CreateFixture(fixtureDef);
+		
+		body.SetAngularDamping(2)
 		
 		return body;
 	}
@@ -70,7 +72,7 @@ var Car = (function() {
 			}
 		}
 		
-		this.parts.body.position.y =  + this.sizes.carHeight / 2;
+		this.parts.body.position.y = this.sizes.carHeight / 2;
 		
 		for(var fb in this.parts.wheels) {
 			for(var lr in this.parts.wheels[fb]) {
@@ -87,7 +89,6 @@ var Car = (function() {
 		obj.addChild(this.parts.wheels.front.right);
 		obj.addChild(this.parts.wheels.back.left);
 		obj.addChild(this.parts.wheels.back.right);
-		obj.position.y = 150;
 		
 		return obj;
 	}

@@ -3,7 +3,8 @@ var Camera = (function() {
 		Camera.parent.constructor.call(this, fov, aspect, near, far, target);
 		
 		this.position.y = 2500;
-		this.position.x = -1
+		// this.position.x = -1000;
+		this.position.x = -1000;
 	}
 	
 	Husky.extend(Camera, THREE.Camera);
