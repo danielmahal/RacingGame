@@ -1,22 +1,22 @@
 var Car = (function() {
 	
 	var constants = {
-		drag: 1.2 * 0.001,
-		resistance: 12 * 0.001,
-		engineForce: 4000 * 0.00015,
-		brakeForce: 500 * 0.0001,
-		startSlip: 4.2,
-		stopSlip: 3,
-		slipMultiplier: 0.15
+		drag: 0.0012,
+		resistance: 0.012,
+		engineForce: 0.5,
+		brakeForce: .2,
+		startSlip: 3.9,
+		stopSlip: 2.9,
+		slipMultiplier: 0.1
 	}
 	
 	function Car(scene, b2world, keyHandler) {
 		this.sizes = {
-			carWidth: 60,
-			carHeight: 60,
-			carLength: 140,
-			wheelRadius: 30,
-			wheelDepth: 40
+			carWidth: 0.6,
+			carHeight: 0.6,
+			carLength: 1.4,
+			wheelRadius: 0.3,
+			wheelDepth: 0.4
 		}
 		
 		this.engineForce = 0;
@@ -35,13 +35,13 @@ var Car = (function() {
 	Car.prototype.setupBody = function(world) {
 		var bodyDef = new b2BodyDef();
 		bodyDef.type = b2Body.b2_dynamicBody;
-		bodyDef.position.Set(this.obj.position.x * PX_TO_M, this.obj.position.y * PX_TO_M);
+		bodyDef.position.Set(this.obj.position.x, this.obj.position.y);
 		var body = world.CreateBody(bodyDef);
 		
 		var fixtureDef = new b2FixtureDef();
-		fixtureDef.shape = new b2PolygonShape.AsBox(this.sizes.carLength * PX_TO_M * .5, (this.sizes.carWidth + this.sizes.wheelDepth * 2) * PX_TO_M * .5);
-		fixtureDef.friction = 0.4;
-		fixtureDef.restitution = 0;
+		fixtureDef.shape = new b2PolygonShape.AsBox(this.sizes.carLength * .5, (this.sizes.carWidth + this.sizes.wheelDepth * 2) * .5);
+		fixtureDef.friction = 0.2;
+		fixtureDef.restitution = 0.2;
 		fixtureDef.density = 100.0;
 		body.CreateFixture(fixtureDef);
 		
@@ -165,13 +165,13 @@ var Car = (function() {
 		this.body.ApplyImpulse(force, this.body.GetPosition());
 		
 		this.steerAngle += -this.steerAngle * .25;
-		var turnRadius = (this.sizes.carLength * PX_TO_M) / Math.sin(this.steerAngle);
+		var turnRadius = (this.sizes.carLength) / Math.sin(this.steerAngle);
 		var angularForce = (Math.sqrt(velocity.Length()) / turnRadius) * 0.4;
 		
 		this.body.SetAngle(this.body.GetAngle() - angularForce);
 		
-		this.obj.position.z = this.body.GetPosition().x * M_TO_PX;
-		this.obj.position.x = this.body.GetPosition().y * M_TO_PX;
+		this.obj.position.z = this.body.GetPosition().x;
+		this.obj.position.x = this.body.GetPosition().y;
 		
 		this.obj.rotation.y = this.body.GetAngle();
  

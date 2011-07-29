@@ -8,17 +8,16 @@ var Wall = (function() {
 		
 		this.body = this.setupBody(scene, world, width, length);
 		
-		console.log(this.obj);
 		scene.addObject(this.obj);
 	}
 	
 	Wall.prototype.setupBody = function(scene, world, width, length) {
 		
 		var shape = new b2PolygonShape();
-		shape.SetAsBox(length * PX_TO_M * .5, width * PX_TO_M * .5);
+		shape.SetAsBox(length * 0.5, width * 0.5);
 		
 		var bodyDef = new b2BodyDef();
-		bodyDef.position.Set(this.obj.position.z * PX_TO_M, this.obj.position.x * PX_TO_M);
+		bodyDef.position.Set(this.obj.position.z, this.obj.position.x);
 		
 		var wall = world.CreateBody(bodyDef);
 		wall.CreateFixture2(shape);

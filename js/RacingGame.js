@@ -1,6 +1,3 @@
-var PX_TO_M = 0.01,
-	M_TO_PX = 100;
-
 var RacingGame = (function() {
 	function RacingGame(container, b2debugCanvas) {
 		this.model = {};
@@ -13,12 +10,13 @@ var RacingGame = (function() {
 		
 		this.keyHandler = new KeyHandler();
 		
-		this.model.camera	= new Camera(50, window.innerWidth * .5 / window.innerHeight, 1, 4000);
+		this.model.camera	= new Camera(50, window.innerWidth * .5 / window.innerHeight, 0.001, 1000);
 		this.model.scene	= new Scene();
 		this.model.renderer	= new Renderer(container, this.model.scene, this.model.camera);
 		
 		this.model.car = new Car(this.model.scene, this.model.b2World, this.keyHandler);
-		this.model.wall = new Wall(this.model.scene, this.model.b2World, 500, 300, 500, 100, 100, 0);
+		
+		this.model.wall = new Wall(this.model.scene, this.model.b2World, 1, 1, 1, 1, 1, Math.random()*Math.PI);
 	}
 	
 	RacingGame.prototype.setupDebugDraw = function(debugCanvas) {
