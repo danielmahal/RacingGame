@@ -15,7 +15,14 @@ var RacingGame = (function() {
 		this.model.scene	= new Scene();
 		this.model.renderer	= new Renderer(container, this.model.scene, this.model.camera);
 		
-		this.model.car = new Car(this.model.scene, this.model.b2World, this.keyHandler);
+		this.model.cars = [];
+		
+		this.model.userCar = new UserCar(this.model.scene, this.model.b2World, this.keyHandler);
+		this.model.cars.push(this.model.userCar);
+		
+		for(var i = 0; i < 5; i++) {
+			this.model.cars.push(new Car(this.model.scene, this.model.b2World, Math.random() * 10, Math.random() * 10, Math.random() * Math.PI));
+		}
 		
 		this.model.wall = new Wall(this.model.scene, this.model.b2World, 3, 3, 10, 1.2, 1, Math.random()*Math.PI);
 	}
@@ -41,7 +48,10 @@ var RacingGame = (function() {
 	
 	RacingGame.prototype.update = function() {
 		this.keyHandler.trigger();
-		this.model.car.update();
+		
+		for(i in this.model.cars) {
+			this.model.cars[i].update();
+		}
 		
 		this.model.b2World.Step(1 / 60, 1, 1);
 	}
@@ -50,7 +60,6 @@ var RacingGame = (function() {
 		this.model.renderer.render();
 		
 		if(this.shouldDebug) {
-			
 			this.model.b2World.DrawDebugData();
 		}
 	}
