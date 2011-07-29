@@ -11,6 +11,8 @@ var RacingGame = (function() {
 		
 		this.keyHandler = new KeyHandler();
 		
+		this.socketHandler = new SocketHandler(this.model);
+		
 		this.model.camera	= new Camera(50, window.innerWidth * .5 / window.innerHeight, 0.001, 1000);
 		this.model.scene	= new Scene();
 		this.model.renderer	= new Renderer(container, this.model.scene, this.model.camera);
