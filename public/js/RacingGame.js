@@ -2,6 +2,8 @@ var RacingGame = (function() {
 	function RacingGame(container, b2debugCanvas) {
 		this.model = {};
 		
+		this.socket = this.setupSocket('http://localhost/');
+		
 		this.shouldDebug = false;
 		this.b2DebugDraw = this.setupDebugDraw(b2debugCanvas);
 		
@@ -10,8 +12,6 @@ var RacingGame = (function() {
 		this.model.b2World.SetDebugDraw(this.b2DebugDraw);
 		
 		this.keyHandler = new KeyHandler();
-		
-		this.socketHandler = new SocketHandler(this.model);
 		
 		this.model.camera	= new Camera(50, window.innerWidth * .5 / window.innerHeight, 0.001, 1000);
 		this.model.scene	= new Scene();
@@ -22,11 +22,23 @@ var RacingGame = (function() {
 		this.model.userCar = new UserCar(this.model.scene, this.model.b2World, this.keyHandler);
 		this.model.cars.push(this.model.userCar);
 		
-		for(var i = 0; i < 5; i++) {
+		for(var i = 0; i < 10; i++) {
 			this.model.cars.push(new Car(this.model.scene, this.model.b2World, Math.random() * 10, Math.random() * 10, Math.random() * Math.PI));
 		}
 		
 		this.model.wall = new Wall(this.model.scene, this.model.b2World, 3, 3, 10, 1.2, 1, Math.random()*Math.PI);
+	}
+	
+	RacingGame.prototype.setupSocket = function(url) {
+		var socket = io.connect(url);
+		
+		socket.on('connecting', function(message) { console.log('Connecting to ', url) });
+		socket.on('connect_failed', function(message) { console.log('Connection failed') });
+		socket.on('connect', function(message) { console.log('Connected to socket!') });
+		socket.on('disconnect', function(message) { console.log('Disconnected from socket!') });
+		socket.on('message', function(message) { console.log('Socket message:', message) });
+		
+		return socket;
 	}
 	
 	RacingGame.prototype.setupDebugDraw = function(debugCanvas) {

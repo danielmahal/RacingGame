@@ -15,8 +15,7 @@ app.configure(function(){
 
 app.get('/', function(req, res){
   res.render('index', {
-	layout: false,
-    title: 'Express'
+	layout: false
   });
 });
 
@@ -25,12 +24,7 @@ app.listen(3000);
 io = io.listen(app);
 
 io.sockets.on('connection', function (client) {
-	
-	console.log('User connected on socket');
-	
-	client.json.send({
-		'type': 'welcome'
-	});
+	client.send('Welcome to the server!');
 });
 
 console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);
