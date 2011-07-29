@@ -19,12 +19,14 @@ var Wall = (function() {
 		var bodyDef = new b2BodyDef();
 		bodyDef.position.Set(this.obj.position.z, this.obj.position.x);
 		
-		var wall = world.CreateBody(bodyDef);
-		wall.CreateFixture2(shape);
+		var body = world.CreateBody(bodyDef);
+		body.CreateFixture2(shape);
 		
-		wall.SetAngle(this.obj.rotation.y);
+		body.SetAngle(this.obj.rotation.y);
 		
-		return wall;
+		console.log(shape);
+		
+		return body;
 	}
 	
 	Wall.prototype.setupObject = function(width, height, length) {

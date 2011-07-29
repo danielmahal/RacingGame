@@ -130,8 +130,6 @@ var Car = (function() {
 		force.Add(drag);
 		force.Add(friction);
 		
-		
-		
 		this.steerAngle += -this.steerAngle * .25;
 		var turnRadius = (this.sizes.carLength) / Math.sin(this.steerAngle);
 		var angularForce = (Math.sqrt(velocity.Length()) / turnRadius) * 0.4;
@@ -140,8 +138,6 @@ var Car = (function() {
 			this.body.ApplyImpulse(force, this.body.GetPosition());
 			this.body.SetAngle(this.body.GetAngle() - angularForce);
 		}
-		
-		
 		
 		this.obj.position.z = this.body.GetPosition().x;
 		this.obj.position.x = this.body.GetPosition().y;

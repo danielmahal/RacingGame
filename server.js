@@ -1,5 +1,6 @@
-var io = require('socket.io');
+var socket = require('./socket.js');
 var express = require('express');
+var fs = require('fs');
 
 var app = module.exports = express.createServer();
 
@@ -13,18 +14,40 @@ app.configure(function(){
 	app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
 });
 
+
+
 app.get('/', function(req, res){
-  res.render('index', {
-	layout: false
-  });
+	res.render('index', {
+		layout: false
+	});
 });
+
+app.get('/maps/:map/collision', function(req, res){
+	var filepath = 'public/assets/geometry/maps/' + req.params.map + '/collision.geo';
+	
+	fs.readFile(filepath, 'utf-8', function(err, data) {
+		if (err) throw err;
+		
+		var pointsPattern = /\n(-?\d+\.\d+)\s[^\s]+\s(-?\d+\.\d+)\s/g;
+		var facesPattern = /\s3\s<\s(\d+)\s(\d+)\s(\d+)/g;
+
+		var points = [];
+		while(match = pointsPattern.exec(data)) {
+			points.push({x: match[1], y: match[2]});
+		}
+
+		var polygons = [];
+		while(match = facesPattern.exec(data)) {
+			polygons.push([points[match[1]], points[match[2]], points[match[3]]]);
+		}
+		
+		res.send(polygons);
+	});
+});
+
+
 
 app.listen(3000);
-
-io = io.listen(app);
-
-io.sockets.on('connection', function (client) {
-	client.send('Welcome to the server!');
-});
-
 console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);
+
+var socket = socket.start(app);
