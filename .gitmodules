@@ -1,9 +1,9 @@
-[submodule "lib/box2d.js"]
-	path = lib/box2d.js
+[submodule "public/lib/box2d.js/"]
+	path = public/lib/box2d.js/
 	url = https://github.com/HBehrens/box2d.js.git
-[submodule "lib/three.js"]
-	path = lib/three.js
+[submodule "public/lib/three.js/"]
+	path = public/lib/three.js/
 	url = https://github.com/mrdoob/three.js.git
-[submodule "lib/stats.js"]
-	path = lib/stats.js
+[submodule "public/lib/stats.js/"]
+	path = public/lib/stats.js/
 	url = https://github.com/mrdoob/stats.js.git
