@@ -40,12 +40,12 @@ var Car = (function() {
 		
 		var fixtureDef = new b2FixtureDef();
 		fixtureDef.shape = new b2PolygonShape.AsBox(this.sizes.carLength * .5, (this.sizes.carWidth + this.sizes.wheelDepth * 2) * .5);
-		fixtureDef.friction = 0.2;
-		fixtureDef.restitution = 0.2;
+		fixtureDef.friction = 0.1;
+		fixtureDef.restitution = 0.3;
 		fixtureDef.density = 100.0;
 		body.CreateFixture(fixtureDef);
 		
-		body.SetAngularDamping(2)
+		body.SetAngularDamping(4)
 		
 		return body;
 	}

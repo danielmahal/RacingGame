@@ -50,6 +50,7 @@ var RacingGame = (function() {
 		this.model.renderer.render();
 		
 		if(this.shouldDebug) {
+			
 			this.model.b2World.DrawDebugData();
 		}
 	}
