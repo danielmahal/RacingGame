@@ -2,6 +2,7 @@ var RacingGame = (function() {
 	function RacingGame(container, b2debugCanvas) {
 		this.model = {};
 		
+		this.shouldDebug = false;
 		this.b2DebugDraw = this.setupDebugDraw(b2debugCanvas);
 		
 		this.model.b2World = new b2World(new b2Vec2(0, 0), true);
@@ -16,10 +17,15 @@ var RacingGame = (function() {
 		
 		this.model.car = new Car(this.model.scene, this.model.b2World, this.keyHandler);
 		
-		this.model.wall = new Wall(this.model.scene, this.model.b2World, 1, 1, 1, 1, 1, Math.random()*Math.PI);
+		this.model.wall = new Wall(this.model.scene, this.model.b2World, 3, 3, 10, 1.2, 1, Math.random()*Math.PI);
 	}
 	
 	RacingGame.prototype.setupDebugDraw = function(debugCanvas) {
+		var game = this;
+		debugCanvas.addEventListener('click', function() {
+			game.shouldDebug = game.shouldDebug ? false : true;
+		});
+		
 		debugCanvas.width = window.innerWidth * .5;
 		debugCanvas.height = window.innerHeight;
 		
@@ -43,7 +49,9 @@ var RacingGame = (function() {
 	RacingGame.prototype.render = function() {
 		this.model.renderer.render();
 		
-		this.model.b2World.DrawDebugData();
+		if(this.shouldDebug) {
+			this.model.b2World.DrawDebugData();
+		}
 	}
 	
 	return RacingGame;
