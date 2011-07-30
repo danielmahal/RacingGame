@@ -14,8 +14,8 @@ var Car = (function() {
 			resistance: 12.8 * 0.001,
 			engineForce: 0.6,
 			brakeForce: .2,
-			startSlip: 7,
-			stopSlip: 4,
+			startSlip: 6,
+			stopSlip: 2,
 			slipMultiplier: 0.02
 		};
 		
@@ -103,7 +103,7 @@ var Car = (function() {
 		var speed = velocity.Length();
 		var angleVector = new b2Vec2(Math.cos(this.body.GetAngle()), Math.sin(this.body.GetAngle()));
 		
-		document.getElementById('ui-speed').innerHTML = parseInt(speed);
+		document.getElementById('ui-speed').innerHTML = parseInt(speed*2);
 		
 		var force = velocity;
 		
@@ -117,8 +117,6 @@ var Car = (function() {
 		
 		var corneringForce = new b2Vec2(-angleVector.y * perpForce, angleVector.x * perpForce).GetNegative();
 		corneringForce.Multiply(this.sideResistance * 20);
-		
-		
 		
 		var traction = new b2Vec2(angleVector.x, angleVector.y);
 		traction.Multiply(this.engineForce);

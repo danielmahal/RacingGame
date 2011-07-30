@@ -14,7 +14,7 @@ var RacingGame = (function() {
 		this.b2DebugScale =10;
 		this.b2DebugCanvas = b2DebugCanvas;
 		this.b2DebugDraw = this.setupDebugDraw(this.b2DebugCanvas);
-		this.setDebugMode(true);
+		this.setDebugMode(false);
 		
 		this.model.b2World = new b2World(new b2Vec2(0, 0), true);
 		this.model.b2World.SetWarmStarting(true);
@@ -22,12 +22,14 @@ var RacingGame = (function() {
 		
 		this.model.cars = [];
 		
-		this.model.userCar = new UserCar(this.model.scene, this.model.b2World, this.keyHandler, 100, 100);
-		this.model.cars.push(this.model.userCar);
-		
-		this.model.camera.setTarget(this.model.userCar.obj);
-		
 		this.socketHandler = new SocketHandler('http://84.215.130.126:3000/', this.model);
+		
+		this.socketHandler.addHandler('connect', this, function() {
+			this.model.userCar = new UserCar(this.model.scene, this.model.b2World, this.keyHandler, this.socketHandler, 100, 100);
+			this.model.cars.push(this.model.userCar);
+			this.model.camera.setTarget(this.model.userCar.obj);
+			this.setDebugMode(true);
+		});
 		
 		this.track = new Track(this.model.scene, this.model.b2World, 'track1');
 	}
@@ -78,7 +80,6 @@ var RacingGame = (function() {
 		this.model.renderer.render();
 		
 		if(this.debug) {
-			
 			this.b2DebugContext.clearRect(0, 0, this.b2DebugCanvas.width, this.b2DebugCanvas.height);
 			this.b2DebugContext.save();
 			var x = -this.model.userCar.obj.position.z * this.b2DebugScale + this.b2DebugCanvas.width * 0.5;

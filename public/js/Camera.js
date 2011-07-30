@@ -10,9 +10,11 @@ var Camera = (function() {
 	}
 	
 	Camera.prototype.update = function() {
-		this.camera.position.y = this.target.position.y + 15;
-		this.camera.position.x = this.target.position.x - 15;
-		this.camera.position.z = this.target.position.z;
+		if(this.target) {
+			this.camera.position.y = this.target.position.y + 15;
+			this.camera.position.x = this.target.position.x - 15;
+			this.camera.position.z = this.target.position.z;
+		}
 	}
 	
 	return Camera;

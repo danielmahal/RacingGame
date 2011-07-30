@@ -1,7 +1,9 @@
 var UserCar = (function() {
-	function UserCar (scene, b2world, keyHandler, x, z) {
+	function UserCar (scene, b2world, keyHandler, socketHandler, x, z) {
 		UserCar.parent.constructor.call(this, scene, b2world, x, z);
+		
 		this.addKeyHandling(keyHandler);
+		this.socketHandler = socketHandler;
 	}
 	
 	Husky.extend(UserCar, Car);
@@ -31,13 +33,18 @@ var UserCar = (function() {
 	}
 	
 	UserCar.prototype.turnLeft = function() {
-		this.steerAngle -= .008;
+		this.steerAngle -= .006;
 		this.steerAngle = Math.min(Math.PI * 0.15, this.steerAngle);
 	}
 	
 	UserCar.prototype.turnRight = function() {
-		this.steerAngle += .008;
+		this.steerAngle += .006;
 		this.steerAngle = Math.min(Math.PI * 0.15, this.steerAngle);
+	}
+	
+	UserCar.prototype.update = function() {
+		UserCar.parent.update.call(this);
+		
 	}
 	
 	return UserCar;
