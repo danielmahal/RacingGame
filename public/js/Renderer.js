@@ -3,14 +3,14 @@ var Renderer = (function() {
 		this.scene = scene;
 		this.camera = camera;
 		
-		this.webGLRenderer = new THREE.WebGLRenderer();
-		this.webGLRenderer.setSize( window.innerWidth * .5, window.innerHeight );
+		this.renderer = new THREE.WebGLRenderer();
+		this.renderer.setSize( window.innerWidth * .5, window.innerHeight );
 		
-		container.appendChild( this.webGLRenderer.domElement );
+		container.appendChild( this.renderer.domElement );
 	}
 	
 	Renderer.prototype.render = function() {
-		this.webGLRenderer.render(this.scene, this.camera);
+		this.renderer.render(this.scene, this.camera);
 	}
 	
 	return Renderer;
