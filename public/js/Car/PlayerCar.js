@@ -17,11 +17,10 @@ var PlayerCar = (function() {
 			this.targetPosition = new b2Vec2(data.position.x, data.position.y);
 			this.targetAngle = data.angle;
 			
-			var x = position.x + (this.targetPosition.x - position.x) * 0.07;
-			var y = position.y + (this.targetPosition.y - position.y) * 0.07;
-			
-			this.body.SetLinearVelocity(new b2Vec2(data.velocity.x, data.velocity.y));
+			this.body.SetLinearVelocity(new b2Vec2(data.linearVelocity.x, data.linearVelocity.y));
 			this.body.SetAngularVelocity(data.angularVelocity);
+			
+			this.body.SetAwake(true);
 		}
 	}
 	
@@ -30,11 +29,11 @@ var PlayerCar = (function() {
 		var position = this.body.GetPosition();
 		var angle = this.body.GetAngle();
 		
-		var x = position.x + (this.targetPosition.x - position.x) * 0.07;
-		var y = position.y + (this.targetPosition.y - position.y) * 0.07;
+		var x = position.x + (this.targetPosition.x - position.x) * 0.03;
+		var y = position.y + (this.targetPosition.y - position.y) * 0.03;
 		
 		this.body.SetPosition(new b2Vec2(x, y));
-		this.body.SetAngle(angle + (this.targetAngle - angle) * 0.5);
+		this.body.SetAngle(angle + (this.targetAngle - angle) * 0.1);
 	}
 	
 	return PlayerCar;

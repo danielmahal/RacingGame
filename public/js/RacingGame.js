@@ -32,8 +32,10 @@ var RacingGame = (function() {
 			this.model.userCar = new UserCar(id, this.model.scene, this.model.b2World, this.keyHandler, this.socketHandler, 100, 100);
 			this.model.cars[id] = this.model.userCar;
 			
-			this.model.camera.setTarget(this.model.userCar.obj);
+			this.model.camera.setTarget(this.model.userCar);
 			this.setDebugMode(true);
+			
+			this.startPing();
 		});
 		
 		this.socketHandler.addHandler('playerConnected', this, function(data) {
@@ -50,6 +52,20 @@ var RacingGame = (function() {
 		});
 		
 		this.track = new Track(this.model.scene, this.model.b2World, 'track1');
+	}
+	
+	RacingGame.prototype.startPing = function() {
+		var st;
+		
+		this.socketHandler.addHandler('ping', this, function() {
+			document.getElementById('ui-ping').innerHTML = new Date().getTime() - st;
+		});
+		
+		var sh = this.socketHandler;
+		setInterval(function() {
+			st = new Date().getTime();
+			sh.emit('ping');
+		}, 600);
 	}
 	
 	RacingGame.prototype.setupDebugDraw = function(debugCanvas) {

@@ -23,6 +23,10 @@ exports.start = function(app) {
 			socket.broadcast.emit('playerData', data);
 		});
 		
+		socket.on('ping', function() {
+			socket.emit('ping');
+		});
+		
 		socket.on('disconnect', function(data) {
 			socket.broadcast.emit('playerDisconnected', player);
 			delete players[socket.id];
