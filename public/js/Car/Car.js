@@ -19,6 +19,9 @@ var Car = (function() {
 			slipMultiplier: 0.02
 		};
 		
+		this.scene = scene;
+		this.b2world = b2world;
+		
 		this.engineForce = 0;
 		this.resistance = this.sideResistance = this.attributes.resistance;
 		this.steerAngle = 0;
@@ -29,16 +32,16 @@ var Car = (function() {
 		this.obj.position.x = x;
 		this.obj.position.z = z;
 		
-		this.body = this.setupBody(b2world);
+		this.scene.addObject( this.obj );
 		
-		scene.addObject( this.obj );
+		this.body = this.setupBody();
 	}
 	
 	Car.prototype.setupBody = function(world) {
 		var bodyDef = new b2BodyDef();
 		bodyDef.type = b2Body.b2_dynamicBody;
 		bodyDef.position.Set(this.obj.position.x, this.obj.position.y);
-		var body = world.CreateBody(bodyDef);
+		var body = this.b2world.CreateBody(bodyDef);
 		
 		var fixtureDef = new b2FixtureDef();
 		fixtureDef.shape = new b2PolygonShape.AsBox(this.sizes.carLength * .5, (this.sizes.carWidth + this.sizes.wheelDepth * 2) * .5);
@@ -52,6 +55,11 @@ var Car = (function() {
 		body.SetAngle(Math.PI * 0.5);
 		
 		return body;
+	}
+	
+	Car.prototype.destroy = function() {
+		this.scene.removeObject( this.obj );
+		this.b2world.DestroyBody( this.body );
 	}
 	
 	Car.prototype.setupObject = function() {
@@ -97,15 +105,29 @@ var Car = (function() {
 		return obj;
 	}
 	
-	Car.prototype.update = function() {
+	
+	Car.prototype.setAccelerate = function(value) {
+		this.accelerate = value;
+	}
+	
+	Car.prototype.setHandbrake = function(value) {
+		this.handbrake = value;
+	}
+	
+	Car.prototype.setBrake = function(value) {
+		this.brake = value;
+	}
+	
+	Car.prototype.setTurn = function(value) {
+		this.turn = value;
+	}
+	
+	
+	Car.prototype.applyForces = function() {
 		var velocity = this.body.GetLinearVelocity();
 		
 		var speed = velocity.Length();
 		var angleVector = new b2Vec2(Math.cos(this.body.GetAngle()), Math.sin(this.body.GetAngle()));
-		
-		document.getElementById('ui-speed').innerHTML = parseInt(speed*2);
-		
-		var force = velocity;
 		
 		var perpForce = -angleVector.y * velocity.x + angleVector.x * velocity.y;
 		
@@ -114,18 +136,6 @@ var Car = (function() {
 			this.engineForce = 0;
 			var frictionForce = angleVector.y * velocity.x + angleVector.x * velocity.y;
 		}
-		
-		var corneringForce = new b2Vec2(-angleVector.y * perpForce, angleVector.x * perpForce).GetNegative();
-		corneringForce.Multiply(this.sideResistance * 20);
-		
-		var traction = new b2Vec2(angleVector.x, angleVector.y);
-		traction.Multiply(this.engineForce);
-		
-		var drag = new b2Vec2(velocity.x, velocity.y);
-		drag.Multiply(-this.attributes.drag * speed);
-		
-		var friction = new b2Vec2(velocity.x, velocity.y);
-		friction.Multiply(-this.resistance);
 		
 		if(!this.slipping) {
 			if(Math.abs(perpForce) + Math.abs(frictionForce) > this.attributes.startSlip) {
@@ -139,12 +149,25 @@ var Car = (function() {
 			}
 		}
 		
-		force.Add(corneringForce);
-		force.Add(traction);
-		force.Add(drag);
-		force.Add(friction);
+		var traction = new b2Vec2(angleVector.x, angleVector.y);
+		traction.Multiply(this.engineForce);
 		
-		this.steerAngle += -this.steerAngle * .25;
+		var friction = new b2Vec2(velocity.x, velocity.y);
+		friction.Multiply(-this.resistance);
+		
+		var drag = new b2Vec2(velocity.x, velocity.y);
+		drag.Multiply(-this.attributes.drag * speed);
+		
+		var corneringForce = new b2Vec2(-angleVector.y * perpForce, angleVector.x * perpForce).GetNegative();
+		corneringForce.Multiply(this.sideResistance * 20);
+		
+		var force = velocity;
+		force.Add(traction);
+		force.Add(friction);
+		force.Add(drag);
+		force.Add(corneringForce);
+		
+		
 		var turnRadius = (this.sizes.carLength) / Math.sin(this.steerAngle);
 		var angularForce = (Math.sqrt(velocity.Length()) / turnRadius) * 0.4;
 		
@@ -152,6 +175,30 @@ var Car = (function() {
 			this.body.ApplyImpulse(force, this.body.GetPosition());
 			this.body.SetAngle(this.body.GetAngle() - angularForce);
 		}
+	}
+	
+	
+	Car.prototype.update = function() {
+		if(this.accelerate) {
+			this.engineForce = this.attributes.engineForce;
+		}
+		
+		if(this.brake) {
+			this.engineForce = -this.attributes.brakeForce;
+		}
+		
+		if(this.turn == 'left') {
+			this.steerAngle -= .006;
+		}
+		
+		if(this.turn == 'right') {
+			this.steerAngle += .006;
+		}
+		
+		this.steerAngle = Math.min(Math.PI * 0.15, this.steerAngle);
+		this.steerAngle += -this.steerAngle * .25;
+		
+		this.applyForces();
 		
 		this.obj.position.z = this.body.GetPosition().x;
 		this.obj.position.x = this.body.GetPosition().y;

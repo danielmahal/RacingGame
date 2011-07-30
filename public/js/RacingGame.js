@@ -5,6 +5,8 @@ var RacingGame = (function() {
 		
 		this.debug = false;
 		
+		this.time = 0;
+		
 		this.keyHandler = new KeyHandler();
 		
 		this.model.camera	= new Camera(50, window.innerWidth * .5 / window.innerHeight, 0.001, 1000);
@@ -25,10 +27,26 @@ var RacingGame = (function() {
 		this.socketHandler = new SocketHandler('http://84.215.130.126:3000/', this.model);
 		
 		this.socketHandler.addHandler('connect', this, function() {
-			this.model.userCar = new UserCar(this.model.scene, this.model.b2World, this.keyHandler, this.socketHandler, 100, 100);
-			this.model.cars.push(this.model.userCar);
+			var id = this.socketHandler.socket.socket.sessionid;
+			
+			this.model.userCar = new UserCar(id, this.model.scene, this.model.b2World, this.keyHandler, this.socketHandler, 100, 100);
+			this.model.cars[id] = this.model.userCar;
+			
 			this.model.camera.setTarget(this.model.userCar.obj);
 			this.setDebugMode(true);
+		});
+		
+		this.socketHandler.addHandler('playerConnected', this, function(data) {
+			var car = new PlayerCar(data.id, this.model.scene, this.model.b2World, this.socketHandler, 100, 100);
+			this.model.cars[data.id] = car;
+		});
+		
+		this.socketHandler.addHandler('playerDisconnected', this, function(data) {
+			var car = this.model.cars[data.id];
+			if(car) {
+				car.destroy();
+				delete this.model.cars[data.id];
+			}
 		});
 		
 		this.track = new Track(this.model.scene, this.model.b2World, 'track1');
@@ -65,10 +83,12 @@ var RacingGame = (function() {
 	}
 	
 	RacingGame.prototype.update = function() {
+		this.time++;
+		
 		this.keyHandler.trigger();
 		
 		for(i in this.model.cars) {
-			this.model.cars[i].update();
+			this.model.cars[i].update(this.time);
 		}
 		
 		this.model.camera.update();

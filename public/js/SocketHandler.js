@@ -13,9 +13,17 @@ var SocketHandler = (function() {
 		this.socket.on('message', function(message) { console.log('Socket message:', message) });
 	}
 	
-	SocketHandler.prototype.addHandler = function(event, scope, callback, params) {
+	SocketHandler.prototype.isConnected = function() {
+		return this.socket.socket.connected;
+	}
+	
+	SocketHandler.prototype.emit = function(event, data) {
+		this.socket.emit(event, data);
+	}
+	
+	SocketHandler.prototype.addHandler = function(event, scope, callback) {
 		this.socket.on(event, function() {
-			callback.apply(scope, params);
+			callback.apply(scope, arguments);
 		})
 	}
 	

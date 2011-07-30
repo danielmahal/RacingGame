@@ -1,13 +1,31 @@
 var io = require('socket.io');
 
+
 exports.start = function(app) {
 	io = io.listen(app);
 	
+	var players = {};
+	
 	io.sockets.on('connection', function (socket) {
-		socket.send('Welcome to the server!');
+		for(i in players) {
+			socket.emit('playerConnected', players[i]);
+		}
 		
-		socket.on('playerUpdate', function(data) {
-			socket.broadcast.emit('playerUpdate', data);
+		var player = {
+			id: socket.id
+		};
+		
+		players[socket.id] = player;
+		
+		socket.broadcast.emit('playerConnected', player);
+		
+		socket.on('playerData', function(data) {
+			socket.broadcast.emit('playerData', data);
+		});
+		
+		socket.on('disconnect', function(data) {
+			socket.broadcast.emit('playerDisconnected', player);
+			delete players[socket.id];
 		});
 	});
 	

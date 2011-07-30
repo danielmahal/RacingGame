@@ -7,6 +7,7 @@ var KeyHandler = (function() {
 	
 	KeyHandler.prototype.add = function(key, scope, handlers) {
 		for(var evt in handlers) {
+			
 			if(evt == 'keyhold') {
 				var newKey = { scope: scope, handler: handlers[evt], down: false };
 				
@@ -17,15 +18,26 @@ var KeyHandler = (function() {
 				
 				this.keys.push(newKey);
 			} else {
+				
 				this.addEventListener(key, scope, evt, handlers[evt]);
 			}
 		}
 	}
 	
 	KeyHandler.prototype.addEventListener = function(key, scope, evt, handler) {
+		var hasParameters = handler.constructor == Array;
+		var fn = hasParameters ? handler[0] : handler;
+		
+		if(hasParameters) {
+			var params = [];
+			for(var i = 1, len = handler.length; i < len; i++) {
+				params[i-1] = handler[i];
+			}
+		}
+		
 		document.addEventListener(evt, function(e) {
 			if(e.which == key) {
-				handler.call(scope);
+				fn.apply(scope, params);
 			}
 		});
 	}

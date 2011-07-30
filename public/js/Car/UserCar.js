@@ -1,50 +1,56 @@
 var UserCar = (function() {
-	function UserCar (scene, b2world, keyHandler, socketHandler, x, z) {
+	function UserCar (id, scene, b2world, keyHandler, socketHandler, x, z) {
 		UserCar.parent.constructor.call(this, scene, b2world, x, z);
 		
-		this.addKeyHandling(keyHandler);
+		this.id = id;
+		
 		this.socketHandler = socketHandler;
+		this.keyHandler = keyHandler;
+		
+		this.addControls();
 	}
 	
 	Husky.extend(UserCar, Car);
 	
-	UserCar.prototype.addKeyHandling = function(keyHandler) {
-		keyHandler.add(87, this, { keyhold: this.accelerate });
-		keyHandler.add(83, this, { keyhold: this.braking });
-		keyHandler.add(65, this, { keyhold: this.turnLeft });
-		keyHandler.add(68, this, { keyhold: this.turnRight });
-		keyHandler.add(32, this, { keydown: this.startHandbrake, keyup: this.stopHandbrake });
+	UserCar.prototype.addControls = function() {
+		this.keyHandler.add(87, this, {
+			keydown: 	[ this.setAccelerate, true ],
+			keyup: 		[ this.setAccelerate, false ]
+		});
+		
+		this.keyHandler.add(83, this, {
+			keydown: 	[ this.setBrake, true ],
+			keyup: 		[ this.setBrake, false ]
+		});
+		
+		this.keyHandler.add(65, this, {
+			keydown: 	[ this.setTurn, 'left' ],
+			keyup: 		[ this.setTurn, false ]
+		});
+		
+		this.keyHandler.add(68, this, {
+			keydown: 	[ this.setTurn, 'right' ],
+			keyup: 		[ this.setTurn, false ]
+		});
+		
+		this.keyHandler.add(32, this, {
+			keydown: 	[ this.setHandbrake, true ],
+			keyup: 		[ this.setHandbrake, false ]
+		});
 	}
 	
-	UserCar.prototype.accelerate = function() {
-		this.engineForce = this.attributes.engineForce;
-	}
-	
-	UserCar.prototype.startHandbrake = function() {
-		this.handbrake = true;
-	}
-	
-	UserCar.prototype.stopHandbrake = function() {
-		this.handbrake = false;
-	}
-	
-	UserCar.prototype.braking = function() {
-		this.engineForce = -this.attributes.brakeForce;
-	}
-	
-	UserCar.prototype.turnLeft = function() {
-		this.steerAngle -= .006;
-		this.steerAngle = Math.min(Math.PI * 0.15, this.steerAngle);
-	}
-	
-	UserCar.prototype.turnRight = function() {
-		this.steerAngle += .006;
-		this.steerAngle = Math.min(Math.PI * 0.15, this.steerAngle);
-	}
-	
-	UserCar.prototype.update = function() {
+	UserCar.prototype.update = function(time) {
 		UserCar.parent.update.call(this);
 		
+		if(this.socketHandler.isConnected() && !(time % 10)) {
+			this.socketHandler.emit('playerData', {
+				id: this.id,
+				angle: this.body.GetAngle(),
+				position: this.body.GetPosition(),
+				velocity: this.body.GetLinearVelocity(),
+				angularVelocity: this.body.GetAngularVelocity()
+			});
+		}
 	}
 	
 	return UserCar;
