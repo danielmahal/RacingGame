@@ -1,6 +1,6 @@
 var UserCar = (function() {
-	function UserCar (scene, b2world, keyHandler) {
-		UserCar.parent.constructor.call(this, scene, b2world);
+	function UserCar (scene, b2world, keyHandler, x, z) {
+		UserCar.parent.constructor.call(this, scene, b2world, x, z);
 		this.addKeyHandling(keyHandler);
 	}
 	

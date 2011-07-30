@@ -1,6 +1,6 @@
 var Car = (function() {
 	
-	function Car(scene, b2world) {
+	function Car(scene, b2world, x, z) {
 		this.sizes = {
 			carWidth: 0.6,
 			carHeight: 0.6,
@@ -10,13 +10,13 @@ var Car = (function() {
 		}
 		
 		this.attributes = {
-			drag: 0.0012,
-			resistance: 0.012,
-			engineForce: 0.5,
+			drag: 0.0008,
+			resistance: 0.010,
+			engineForce: 1,
 			brakeForce: .2,
-			startSlip: 3.9,
-			stopSlip: 2.9,
-			slipMultiplier: 0.1
+			startSlip: 10,
+			stopSlip: 6,
+			slipMultiplier: 0.05
 		};
 		
 		this.engineForce = 0;
@@ -25,6 +25,8 @@ var Car = (function() {
 		this.slipping = false;
 		
 		this.obj = this.setupObject();
+		this.obj.position.x = x;
+		this.obj.position.z = z;
 		
 		this.body = this.setupBody(b2world);
 		
@@ -119,6 +121,7 @@ var Car = (function() {
 				this.slipping = true;
 			}
 		} else {
+			console.log('Slipping');
 			if(Math.abs(perpForce) < this.attributes.stopSlip) {
 				this.currentResistance = this.attributes.resistance;
 				this.slipping = false;
