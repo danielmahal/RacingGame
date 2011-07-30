@@ -18,8 +18,8 @@ var Camera = (function() {
 			
 			this.angle += (this.target.body.GetAngle() - this.angle) * 0.05;
 			this.camera.position.y = this.target.obj.position.y + 15;
-			this.camera.position.x = this.target.obj.position.x - Math.sin(this.angle) * 10;
-			this.camera.position.z = this.target.obj.position.z - Math.cos(this.angle) * 10;
+			this.camera.position.x = this.target.obj.position.x - Math.sin(this.angle) * 20;
+			this.camera.position.z = this.target.obj.position.z - Math.cos(this.angle) * 20;
 		}
 	}
 	

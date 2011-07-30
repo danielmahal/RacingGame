@@ -9,6 +9,8 @@ var RacingGame = (function() {
 		
 		this.keyHandler = new KeyHandler();
 		
+		this.loader = new ModelLoader();
+		
 		this.model.camera	= new Camera(50, window.innerWidth * .5 / window.innerHeight, 0.001, 1000);
 		this.model.scene	= new Scene();
 		this.model.renderer	= new Renderer(container, this.model.scene, this.model.camera.camera);
@@ -16,11 +18,13 @@ var RacingGame = (function() {
 		this.b2DebugScale =10;
 		this.b2DebugCanvas = b2DebugCanvas;
 		this.b2DebugDraw = this.setupDebugDraw(this.b2DebugCanvas);
-		this.setDebugMode(false);
+		this.setDebugMode(this.debug);
 		
 		this.model.b2World = new b2World(new b2Vec2(0, 0), true);
 		this.model.b2World.SetWarmStarting(true);
 		this.model.b2World.SetDebugDraw(this.b2DebugDraw);
+		
+		this.track = new Track(this.model.scene, this.model.b2World, this.loader, 'track1');
 		
 		this.model.cars = [];
 		
@@ -33,9 +37,6 @@ var RacingGame = (function() {
 			this.model.cars[id] = this.model.userCar;
 			
 			this.model.camera.setTarget(this.model.userCar);
-			this.setDebugMode(true);
-			
-			this.startPing();
 		});
 		
 		this.socketHandler.addHandler('playerConnected', this, function(data) {
@@ -50,22 +51,6 @@ var RacingGame = (function() {
 				delete this.model.cars[data.id];
 			}
 		});
-		
-		this.track = new Track(this.model.scene, this.model.b2World, 'track1');
-	}
-	
-	RacingGame.prototype.startPing = function() {
-		var st;
-		
-		this.socketHandler.addHandler('ping', this, function() {
-			document.getElementById('ui-ping').innerHTML = new Date().getTime() - st;
-		});
-		
-		var sh = this.socketHandler;
-		setInterval(function() {
-			st = new Date().getTime();
-			sh.emit('ping');
-		}, 600);
 	}
 	
 	RacingGame.prototype.setupDebugDraw = function(debugCanvas) {

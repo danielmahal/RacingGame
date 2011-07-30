@@ -15,7 +15,7 @@ var Car = (function() {
 			engineForce: 0.6,
 			brakeForce: .2,
 			startSlip: 6,
-			stopSlip: 2,
+			stopSlip: 4,
 			slipMultiplier: 0.02
 		};
 		
