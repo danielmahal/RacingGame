@@ -10,19 +10,20 @@ var Car = (function() {
 		}
 		
 		this.attributes = {
-			drag: 0.0008,
-			resistance: 0.010,
-			engineForce: 1,
+			drag: 0.08 * 0.001,
+			resistance: 12.8 * 0.001,
+			engineForce: 0.6,
 			brakeForce: .2,
-			startSlip: 10,
-			stopSlip: 6,
-			slipMultiplier: 0.05
+			startSlip: 7,
+			stopSlip: 4,
+			slipMultiplier: 0.02
 		};
 		
 		this.engineForce = 0;
-		this.currentResistance = this.attributes.resistance;
+		this.resistance = this.sideResistance = this.attributes.resistance;
 		this.steerAngle = 0;
 		this.slipping = false;
+		this.handbrake = false;
 		
 		this.obj = this.setupObject();
 		this.obj.position.x = x;
@@ -46,7 +47,9 @@ var Car = (function() {
 		fixtureDef.density = 100.0;
 		body.CreateFixture(fixtureDef);
 		
-		body.SetAngularDamping(2)
+		body.SetAngularDamping(10);
+		
+		body.SetAngle(Math.PI * 0.5);
 		
 		return body;
 	}
@@ -100,11 +103,22 @@ var Car = (function() {
 		var speed = velocity.Length();
 		var angleVector = new b2Vec2(Math.cos(this.body.GetAngle()), Math.sin(this.body.GetAngle()));
 		
+		document.getElementById('ui-speed').innerHTML = parseInt(speed);
+		
 		var force = velocity;
 		
 		var perpForce = -angleVector.y * velocity.x + angleVector.x * velocity.y;
+		
+		frictionForce = 0;
+		if(this.handbrake) {
+			this.engineForce = 0;
+			var frictionForce = angleVector.y * velocity.x + angleVector.x * velocity.y;
+		}
+		
 		var corneringForce = new b2Vec2(-angleVector.y * perpForce, angleVector.x * perpForce).GetNegative();
-		corneringForce.Multiply(this.currentResistance * 20);
+		corneringForce.Multiply(this.sideResistance * 20);
+		
+		
 		
 		var traction = new b2Vec2(angleVector.x, angleVector.y);
 		traction.Multiply(this.engineForce);
@@ -113,17 +127,16 @@ var Car = (function() {
 		drag.Multiply(-this.attributes.drag * speed);
 		
 		var friction = new b2Vec2(velocity.x, velocity.y);
-		friction.Multiply(-this.currentResistance);
+		friction.Multiply(-this.resistance);
 		
 		if(!this.slipping) {
-			if(Math.abs(perpForce) > this.attributes.startSlip) {
-				this.currentResistance = this.attributes.resistance * this.attributes.slipMultiplier;
+			if(Math.abs(perpForce) + Math.abs(frictionForce) > this.attributes.startSlip) {
+				this.sideResistance = this.attributes.resistance * this.attributes.slipMultiplier;
 				this.slipping = true;
 			}
 		} else {
-			console.log('Slipping');
-			if(Math.abs(perpForce) < this.attributes.stopSlip) {
-				this.currentResistance = this.attributes.resistance;
+			if(Math.abs(perpForce) + Math.abs(frictionForce) < this.attributes.stopSlip) {
+				this.sideResistance = this.attributes.resistance;
 				this.slipping = false;
 			}
 		}

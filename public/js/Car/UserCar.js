@@ -11,15 +11,19 @@ var UserCar = (function() {
 		keyHandler.add(83, this, { keyhold: this.braking });
 		keyHandler.add(65, this, { keyhold: this.turnLeft });
 		keyHandler.add(68, this, { keyhold: this.turnRight });
-		keyHandler.add(32, this, { keyhold: this.boost });
+		keyHandler.add(32, this, { keydown: this.startHandbrake, keyup: this.stopHandbrake });
 	}
 	
 	UserCar.prototype.accelerate = function() {
 		this.engineForce = this.attributes.engineForce;
 	}
 	
-	UserCar.prototype.boost = function() {
-		this.engineForce = this.attributes.engineForce * 3;
+	UserCar.prototype.startHandbrake = function() {
+		this.handbrake = true;
+	}
+	
+	UserCar.prototype.stopHandbrake = function() {
+		this.handbrake = false;
 	}
 	
 	UserCar.prototype.braking = function() {
@@ -27,13 +31,13 @@ var UserCar = (function() {
 	}
 	
 	UserCar.prototype.turnLeft = function() {
-		this.steerAngle -= .02;
-		this.steerAngle = Math.min(Math.PI * 0.2, this.steerAngle);
+		this.steerAngle -= .008;
+		this.steerAngle = Math.min(Math.PI * 0.15, this.steerAngle);
 	}
 	
 	UserCar.prototype.turnRight = function() {
-		this.steerAngle += .02;
-		this.steerAngle = Math.min(Math.PI * 0.2, this.steerAngle);
+		this.steerAngle += .008;
+		this.steerAngle = Math.min(Math.PI * 0.15, this.steerAngle);
 	}
 	
 	return UserCar;

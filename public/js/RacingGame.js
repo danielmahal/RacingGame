@@ -11,6 +11,7 @@ var RacingGame = (function() {
 		this.model.scene	= new Scene();
 		this.model.renderer	= new Renderer(container, this.model.scene, this.model.camera.camera);
 		
+		this.b2DebugScale =10;
 		this.b2DebugCanvas = b2DebugCanvas;
 		this.b2DebugDraw = this.setupDebugDraw(this.b2DebugCanvas);
 		this.setDebugMode(true);
@@ -43,7 +44,7 @@ var RacingGame = (function() {
 		this.b2DebugContext = debugCanvas.getContext('2d');
 		
 		var debugDraw = new b2DebugDraw();
-		debugDraw.SetDrawScale(20);
+		debugDraw.SetDrawScale(this.b2DebugScale);
 		debugDraw.SetFlags(b2DebugDraw.e_shapeBit | b2DebugDraw.e_centerOfMassBit);
 		debugDraw.SetSprite(this.b2DebugContext);
 		
@@ -80,8 +81,8 @@ var RacingGame = (function() {
 			
 			this.b2DebugContext.clearRect(0, 0, this.b2DebugCanvas.width, this.b2DebugCanvas.height);
 			this.b2DebugContext.save();
-			var x = -this.model.userCar.obj.position.z * 20 + this.b2DebugCanvas.width * 0.5;
-			var y = this.model.userCar.obj.position.x * 20 - this.b2DebugCanvas.height * 0.5;
+			var x = -this.model.userCar.obj.position.z * this.b2DebugScale + this.b2DebugCanvas.width * 0.5;
+			var y = this.model.userCar.obj.position.x * this.b2DebugScale - this.b2DebugCanvas.height * 0.5;
 			this.b2DebugContext.translate(x, y);
 			this.model.b2World.DrawDebugData();
 			this.b2DebugContext.restore();
