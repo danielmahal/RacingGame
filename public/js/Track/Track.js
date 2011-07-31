@@ -19,7 +19,7 @@ var Track = (function() {
 	
 	Track.prototype.createRoad = function(geometry) {
 		for(var i in geometry.vertices) {
-			geometry.vertices[i].position.y = Math.sin(geometry.vertices[i].position.z * 0.05) * 10;
+			geometry.vertices[i].position.y = Math.sin(geometry.vertices[i].position.z * 0.05) * 15;
 		}
 		
 		var material = new THREE.MeshPhongMaterial( { ambient: 0x333333, color: 0x000000, specular: 0x333333, wireframe: true }  );

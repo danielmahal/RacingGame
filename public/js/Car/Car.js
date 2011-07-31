@@ -27,10 +27,15 @@ var Car = (function() {
 		this.steerAngle = 0;
 		this.slipping = false;
 		this.handbrake = false;
+		this.velocityY = 0;
+		this.onGround = false;
+		
+		this.bodyRestitution = 0.3;
 		
 		this.obj = this.setupObject();
 		this.obj.position.x = x;
 		this.obj.position.z = z;
+		this.obj.position.y = 10;
 		
 		this.scene.addObject( this.obj );
 		
@@ -46,7 +51,7 @@ var Car = (function() {
 		var fixtureDef = new b2FixtureDef();
 		fixtureDef.shape = new b2PolygonShape.AsBox(this.sizes.carLength * .5, (this.sizes.carWidth + this.sizes.wheelDepth * 2) * .5);
 		fixtureDef.friction = 0.1;
-		fixtureDef.restitution = 0.3;
+		fixtureDef.restitution = this.bodyRestitution;
 		fixtureDef.density = 100.0;
 		body.CreateFixture(fixtureDef);
 		
@@ -112,14 +117,31 @@ var Car = (function() {
 		this.obj.position.x = this.body.GetPosition().y;
 		
 		
-		
+		var rayOffset = 10;
 		var rayPos = this.obj.position.clone();
-		var ray = new THREE.Ray( new THREE.Vector3(this.obj.position.x, this.obj.position.y + 10, this.obj.position.z), new THREE.Vector3(0, -1, 0) );
-		var c = THREE.Collisions.rayCastNearest( ray );
+		var ray = new THREE.Ray( new THREE.Vector3(this.obj.position.x, this.obj.position.y + rayOffset, this.obj.position.z), new THREE.Vector3(0, -1, 0) );
+		var cast = THREE.Collisions.rayCastNearest( ray );
 		
-		if( c ) {
-			var face = c.mesh.geometry.faces[c.faceIndex];
-			this.obj.position.y -= c.distance - 10;
+		if( cast ) {
+			var face = cast.mesh.geometry.faces[cast.faceIndex];
+			var distance = cast.distance - rayOffset;
+			
+			this.velocityY -= 1 / this.body.GetMass();
+			
+			if(distance < -this.velocityY) {
+				var velocity = this.body.GetLinearVelocity();
+				
+				var restitution = this.velocityY * this.bodyRestitution;
+				this.velocityY = -distance + restitution;
+			}
+			
+			this.obj.position.y += this.velocityY;
+		}
+		
+		if(distance + this.velocityY > 0.4) {
+			this.onGround = false;
+		} else {
+			this.onGround = true;
 		}
 		
 		this.obj.rotation.y = this.body.GetAngle();

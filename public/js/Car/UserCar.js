@@ -136,14 +136,21 @@ var UserCar = (function() {
 		
 		this.applyForces();
 		
+		if(this.onGround) {
+			
+		}
+		
 		this.engineForce = 0;
 		
 		if(this.socketHandler.isConnected() && !(time % 7)) {
+			var position = this.body.GetPosition();
+			var velocity = this.body.GetLinearVelocity();
+			
 			this.socketHandler.emit('playerData', {
 				id: this.id,
 				angle: this.body.GetAngle(),
-				position: this.body.GetPosition(),
-				linearVelocity: this.body.GetLinearVelocity(),
+				position: { x: position.x, y: this.obj.position.y, z: position.y },
+				linearVelocity: { x: velocity.x, y: this.velocityY, z: velocity.y },
 				angularVelocity: this.body.GetAngularVelocity()
 			});
 		}
