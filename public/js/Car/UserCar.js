@@ -138,7 +138,7 @@ var UserCar = (function() {
 		
 		this.engineForce = 0;
 		
-		if(this.socketHandler.isConnected() && !(time % 10)) {
+		if(this.socketHandler.isConnected() && !(time % 7)) {
 			this.socketHandler.emit('playerData', {
 				id: this.id,
 				angle: this.body.GetAngle(),

@@ -111,8 +111,19 @@ var Car = (function() {
 		this.obj.position.z = this.body.GetPosition().x;
 		this.obj.position.x = this.body.GetPosition().y;
 		
+		
+		
+		var rayPos = this.obj.position.clone();
+		var ray = new THREE.Ray( new THREE.Vector3(this.obj.position.x, this.obj.position.y + 10, this.obj.position.z), new THREE.Vector3(0, -1, 0) );
+		var c = THREE.Collisions.rayCastNearest( ray );
+		
+		if( c ) {
+			var face = c.mesh.geometry.faces[c.faceIndex];
+			this.obj.position.y -= c.distance - 10;
+		}
+		
 		this.obj.rotation.y = this.body.GetAngle();
- 
+
 		for(i in this.parts.wheels.front) {
 			this.parts.wheels.front[i].rotation.y = -this.steerAngle * 5 + (Math.PI * 1.5);
 		}
